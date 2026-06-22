@@ -12,7 +12,7 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Provenant Mobile App Simulator</title>
+    <title>Provenant Mobile App Simulator & Academy</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Inter & Fira Code Fonts -->
@@ -31,7 +31,6 @@
         }
     </script>
     <style>
-        /* Custom scrollbar behaviors for terminal elements */
         .custom-scroll::-webkit-scrollbar {
             width: 4px;
         }
@@ -45,13 +44,17 @@
         .ig-gradient-ring {
             background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
         }
+        .video-card:hover .video-play-btn {
+            transform: scale(1.1);
+            background-color: rgb(225, 29, 72);
+        }
     </style>
 </head>
 <body class="bg-[#05070f] text-[#f8fafc] min-h-screen p-4 md:p-8 flex items-center justify-center selection:bg-rose-500 selection:text-white">
 
-    <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+    <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        <!-- LEFT COLUMN: CONTROLS & MARKETING CONTEXT -->
+        <!-- LEFT COLUMN: CONTROLS & ACADEMY -->
         <div class="lg:col-span-5 space-y-6 text-left">
             <div class="space-y-3">
                 <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold uppercase tracking-wider">
@@ -156,6 +159,48 @@
                     <button onclick="downloadFlattenedMedia()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3.5 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10">
                         📥 Bake & Download Secure Image
                     </button>
+                </div>
+            </div>
+
+            <!-- NEW YOUTUBE VIDEO SECTION -->
+            <div class="bg-slate-900/40 border border-white/5 rounded-2xl p-5 space-y-4">
+                <div class="flex items-center justify-between border-b border-white/5 pb-2">
+                    <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                        🎥 Provenant Academy Video Guides
+                    </h4>
+                    <span class="text-[9px] bg-rose-500/10 border border-rose-500/20 text-rose-500 px-2 py-0.5 rounded font-bold uppercase">Tutorials</span>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Video Card 1 -->
+                    <div onclick="openVideoPlayer('https://www.youtube.com/embed/dQw4w9WgXcQ')" class="video-card group cursor-pointer bg-slate-950/60 border border-white/5 rounded-xl overflow-hidden transition-all hover:border-rose-500/30">
+                        <div class="relative h-24 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=400&auto=format&fit=crop');">
+                            <div class="absolute inset-0 bg-slate-950/40 flex items-center justify-center">
+                                <div class="video-play-btn w-8 h-8 rounded-full bg-rose-600 flex items-center justify-center text-white transition-all shadow-lg">
+                                    ▶
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-2 text-left">
+                            <h5 class="text-[11px] font-bold text-slate-200 truncate">GitHub Pages Deployment Guide</h5>
+                            <p class="text-[9px] text-slate-500">Deploy your simulator live in under 5 minutes</p>
+                        </div>
+                    </div>
+
+                    <!-- Video Card 2 -->
+                    <div onclick="openVideoPlayer('https://www.youtube.com/embed/dQw4w9WgXcQ')" class="video-card group cursor-pointer bg-slate-950/60 border border-white/5 rounded-xl overflow-hidden transition-all hover:border-rose-500/30">
+                        <div class="relative h-24 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1542204172-e7052809a936?q=80&w=400&auto=format&fit=crop');">
+                            <div class="absolute inset-0 bg-slate-950/40 flex items-center justify-center">
+                                <div class="video-play-btn w-8 h-8 rounded-full bg-rose-600 flex items-center justify-center text-white transition-all shadow-lg">
+                                    ▶
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-2 text-left">
+                            <h5 class="text-[11px] font-bold text-slate-200 truncate">Instagram Safe-Zone Crop Hacks</h5>
+                            <p class="text-[9px] text-slate-500">Prevent social crop metrics from cutting badges</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -275,6 +320,21 @@
         <span id="toast-message-text" class="text-xs font-semibold">Initiating secure sandbox components...</span>
     </div>
 
+    <!-- INTERACTIVE YOUTUBE PLAYER MODAL OVERLAY -->
+    <div id="youtube-modal" class="fixed inset-0 z-[10000] bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+        <div class="relative w-full max-w-3xl bg-slate-950 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-4 border-b border-white/5">
+                <h3 class="text-xs font-black uppercase text-slate-200 tracking-wider">🎥 Playing Academy Video Guide</h3>
+                <button onclick="closeVideoPlayer()" class="text-slate-400 hover:text-white transition-colors text-lg font-bold">✕</button>
+            </div>
+            <!-- Video Iframe wrapper -->
+            <div class="relative aspect-video">
+                <iframe id="youtube-iframe" class="absolute inset-0 w-full h-full" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Core State Variables
         let mockMediaType = 'image'; // image, video
@@ -294,6 +354,25 @@
             image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop',
             video: 'https://images.unsplash.com/photo-1542204172-e7052809a936?q=80&w=600&auto=format&fit=crop'
         };
+
+        // YouTube Modal Functions
+        function openVideoPlayer(videoUrl) {
+            const modal = document.getElementById('youtube-modal');
+            const iframe = document.getElementById('youtube-iframe');
+            iframe.src = videoUrl;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            writeRadarLog(`Loading YouTube tutorial stream: ${videoUrl}`, "warning");
+        }
+
+        function closeVideoPlayer() {
+            const modal = document.getElementById('youtube-modal');
+            const iframe = document.getElementById('youtube-iframe');
+            iframe.src = "";
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            writeRadarLog("Academy tutorial player closed.");
+        }
 
         // Custom Toast System (Replacements for blocked browser alerts)
         function showToast(message) {
@@ -390,7 +469,6 @@
             // If they change media, require a new secure signing step
             isSecuredSigned = false;
             document.getElementById('sim-watermark-pill').classList.add('hidden');
-            document.getElementById('badge-download-deck').style.display = 'none';
 
             writeRadarLog(`Loaded original sensory parameters: [${type === 'image' ? 'raw_camera.jpg' : 'instagram_reel_final.mp4'}]`, 'warning');
         }
@@ -509,12 +587,6 @@
 
             // Sync coordinate logs
             document.getElementById('coords-log-display').innerText = `X: ${currentOffsetX.toFixed(0)}% | Y: ${currentOffsetY.toFixed(0)}%`;
-            
-            // Sync dashboard configuration slider metrics dynamically
-            document.getElementById('tag-offset-x').value = Math.floor(currentOffsetX);
-            document.getElementById('tag-offset-y').value = Math.floor(currentOffsetY);
-            document.getElementById('offset-x-lbl').innerText = `${Math.floor(currentOffsetX)}%`;
-            document.getElementById('offset-y-val').innerText = `${Math.floor(currentOffsetY)}%`;
         }
 
         function onDragEnd() {
