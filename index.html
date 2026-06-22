@@ -13,1267 +13,800 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Provenant | Creator Sandbox Simulation</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Fira+Code:wght@400;500&display=swap">
-    <style>
-        :root {
-            --brand-creator: #e11d48; /* Vibrant Rose */
-            --brand-dark: #0f172a;    /* Deep Slate */
-            --brand-surface: #1e293b; /* Medium Slate */
-            --brand-border: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --success-green: #00b894;
-            --ig-gradient: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
-            color: var(--text-main);
-            line-height: 1.6;
-            min-height: 100vh;
-            padding: 40px 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            font-weight: 900;
-            letter-spacing: -1px;
-            margin-bottom: 10px;
-        }
-
-        header h1 span { color: var(--brand-creator); }
-        header p { color: var(--text-muted); max-width: 600px; margin: 0 auto; }
-
-        .sandbox-grid {
-            display: grid;
-            grid-template-columns: 1fr 1.3fr 1fr;
-            gap: 24px;
-            align-items: start;
-        }
-
-        @media (max-width: 1024px) {
-            .sandbox-grid { grid-template-columns: 1fr; }
-        }
-
-        .panel {
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid var(--brand-border);
-            border-radius: 20px;
-            padding: 24px;
-            backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            min-height: 560px;
-        }
-
-        .panel-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #fff;
-            border-bottom: 1px solid var(--brand-border);
-            padding-bottom: 10px;
-            margin-bottom: 5px;
-        }
-
-        .scenario-selector { display: flex; flex-direction: column; gap: 12px; }
-         
-        .scenario-option {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--brand-border);
-            padding: 14px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            text-align: left;
-        }
-
-        .scenario-option:hover {
-            border-color: rgba(225, 29, 72, 0.4);
-            background: rgba(225, 29, 72, 0.02);
-        }
-
-        .scenario-option.active {
-            border-color: var(--brand-creator);
-            background: rgba(225, 29, 72, 0.1);
-        }
-
-        .scenario-option strong { display: block; color: #fff; margin-bottom: 4px; font-size: 0.9rem; }
-        .scenario-option p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
-
-        .action-btn {
-            background: var(--brand-creator);
-            color: #fff;
-            border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.95rem;
-            letter-spacing: 0.5px;
-            box-shadow: 0 4px 15px rgba(225, 29, 72, 0.2);
-            width: 100%;
-        }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(225, 29, 72, 0.4);
-        }
-
-        /* CUSTOM PERSONALIZATION PANELS */
-        .config-sub-section {
-            background: rgba(15, 23, 42, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 14px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .config-label-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 10px;
-            font-weight: 800;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .config-input-text {
-            width: 100%;
-            background: rgba(9, 13, 22, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 10px 14px;
-            color: #fff;
-            font-size: 12px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .config-input-text:focus {
-            border-color: var(--brand-creator);
-        }
-
-        .config-slider {
-            width: 100%;
-            height: 4px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            appearance: none;
-            outline: none;
-            cursor: pointer;
-        }
-
-        .config-slider::-webkit-slider-thumb {
-            appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--brand-creator);
-            box-shadow: 0 0 8px var(--brand-creator);
-            transition: transform 0.1s;
-        }
-
-        .config-slider::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-
-        .upload-box {
-            border: 2px dashed rgba(255, 255, 255, 0.15);
-            background: rgba(255, 255, 255, 0.01);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: auto;
-        }
-
-        .upload-box:hover, .upload-box.dragover {
-            border-color: var(--brand-creator);
-            background: rgba(225, 29, 72, 0.03);
-        }
-
-        .upload-box svg { color: var(--text-muted); transition: color 0.25s ease; }
-        .upload-box:hover svg, .upload-box.dragover svg { color: var(--brand-creator); }
-        .upload-box span { font-size: 0.85rem; font-weight: 500; color: #fff; }
-        .upload-box p { font-size: 0.75rem; color: var(--text-muted); }
-        .hidden-input { display: none; }
-
-        .terminal {
-            background: #090d16;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 15px;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.8rem;
-            height: 140px;
-            overflow-y: auto;
-            color: #38bdf8;
-            text-align: left;
-        }
-
-        .terminal-line { margin-bottom: 6px; line-height: 1.4; white-space: pre-wrap; }
-        .terminal-line.neutral { color: var(--text-muted); }
-        .terminal-line.bypass { color: #eab308; }
-        .terminal-line.success { color: var(--success-green); }
-        .terminal-line.danger { color: #f43f5e; }
-
-        .output-zone {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 2px dashed var(--brand-border);
-            border-radius: 12px;
-            padding: 15px;
-            background: rgba(0,0,0,0.2);
-            min-height: 320px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .media-preview-canvas {
-            width: 100%;
-            height: 280px;
-            border-radius: 8px;
-            background-size: cover;
-            background-position: center;
-            position: relative;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
-            display: none;
-        }
-
-        .media-preview-canvas.format-vertical { width: 180px; height: 280px; border-radius: 16px; }
-        .media-preview-canvas.format-landscape { width: 100%; height: 240px; }
-
-        /* NATIVE INSTAGRAM REEL SYSTEM APP ATTRIBUTION TAG MOCKUP */
-        .canvas-fading-watermark {
-            position: absolute;
-            background: rgba(22, 24, 26, 0.76);
-            border: 1.5px solid var(--brand-border);
-            border-radius: 20px;
-            padding: 4px 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        /* Video Scenario Fading Loop Animation class */
-        .canvas-fading-watermark.animated-video-overlay {
-            animation: watermarkFadeInOut 7s infinite ease-in-out;
-        }
-
-        /* Image Scenario 4-second Fading Animation class */
-        .canvas-fading-watermark.animated-image-overlay {
-            animation: watermarkImageFade 4s forwards cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes watermarkFadeInOut {
-            0% { opacity: 0; transform: translateY(-5px); }
-            10% { opacity: 1; transform: translateY(0); }
-            70% { opacity: 1; transform: translateY(0); }
-            80% { opacity: 0; transform: translateY(5px); }
-            100% { opacity: 0; }
-        }
-
-        @keyframes watermarkImageFade {
-            0% { opacity: 0; transform: translateY(-5px); }
-            10% { opacity: 1; transform: translateY(0); }
-            75% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(5px); }
-        }
-
-        .watermark-dot {
-            width: 6px;
-            height: 6px;
-            background: var(--success-green);
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--success-green);
-        }
-
-        .watermark-text {
-            color: #fff;
-            font-size: 8px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-
-        .status-ready-tag {
-            margin-top: 15px;
-            background: rgba(0, 184, 148, 0.1);
-            border: 1px solid var(--success-green);
-            color: var(--success-green);
-            padding: 8px 22px;
-            border-radius: 30px;
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            display: none;
-            outline: none;
-            border-style: solid;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: fadeIn 0.3s ease;
-        }
-
-        .download-badge-section {
-            margin-top: 20px;
-            padding: 20px;
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px dashed rgba(255, 255, 255, 0.15);
-            border-radius: 16px;
-            width: 100%;
-            display: none;
-            flex-direction: column;
-            gap: 20px;
-            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .download-split-grid {
-            display: grid;
-            grid-template-columns: 1.2fr 1fr;
-            gap: 20px;
-            width: 100%;
-        }
-
-        @media (max-width: 768px) {
-            .download-split-grid { grid-template-columns: 1fr; }
-        }
-
-        .download-column {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.01);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-        }
-
-        .download-badge-title {
-            font-size: 0.75rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #fff;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding-bottom: 6px;
-            width: 100%;
-        }
-
-        .badge-matrix-row {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-        }
-
-        .matrix-pill-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
-            padding: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            flex: 1;
-            text-align: center;
-        }
-
-        .matrix-pill-card:hover, .matrix-pill-card.selected {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: var(--brand-creator);
-        }
-
-        .matrix-pill-label {
-            font-size: 8px;
-            font-weight: 800;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-
-        .matrix-pill-card.selected .matrix-pill-label { color: #fff; }
-
-        .badge-preview-pill {
-            padding: 3px 6px;
-            border-radius: 4px;
-            background: linear-gradient(135deg, #ee2a7b 0%, #a21caf 100%);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-
-        .badge-preview-pill .pill-main-text {
-            color: #ffffff;
-            font-size: 6px;
-            font-weight: 900;
-            text-transform: uppercase;
-        }
-
-        .badge-preview-pill .pill-highlight-text {
-            font-size: 8px;
-            font-weight: 900;
-            font-style: italic;
-            color: #ffffff;
-            margin: 0.5px 0;
-        }
-
-        .badge-preview-pill .pill-sub-text {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 4.5px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .check-preview-box {
-            width: 185px;
-            height: 32px;
-            border-radius: 20px;
-            background: rgba(22, 24, 26, 0.75);
-            border: 1px solid rgba(255,255,255,0.08);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 0 10px;
-        }
-
-        .check-preview-box .box-dot {
-            width: 12px;
-            height: 12px;
-            background: #00b894;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 8px;
-            font-weight: 900;
-        }
-
-        .check-preview-text {
-            color: #ffffff;
-            font-size: 10.5px;
-            font-weight: 600;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            white-space: nowrap;
-        }
-
-        .download-pill-trigger {
-            background: var(--brand-creator);
-            color: #fff;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 50px;
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.25);
-            transition: all 0.2s ease;
-            width: 100%;
-            text-align: center;
-        }
-
-        .download-pill-trigger.btn-green {
-            background: var(--success-green);
-            box-shadow: 0 4px 12px rgba(0, 184, 148, 0.25);
-        }
-
-        .download-pill-trigger:hover {
-            transform: translateY(-1.5px);
-            filter: brightness(1.1);
-        }
-
-        .output-placeholder { color: var(--text-muted); font-size: 0.85rem; text-align: center; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* FORENSIC TOAST NOTIFIER */
-        #custom-toast {
-            display: none;
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: #090d16;
-            color: #fff;
-            border-left: 4px solid var(--brand-creator);
-            padding: 16px 24px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            z-index: 10000;
-            align-items: center;
-            gap: 12px;
-            font-weight: 600;
-            font-size: 13px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <header>
-            <h1>Provenant <span>Creator Sandbox</span></h1>
-            <p>Simulate how our updated permissive architecture runs deep forensic verification across images and video streams—bypassing safe social media filters while flagging generative overrides.</p>
-        </header>
-
-        <div class="sandbox-grid">
-             
-            <!-- PANEL 1: IMAGE CONTROLS -->
-            <div class="panel">
-                <div class="panel-title">1. Image Media Environments</div>
-                <div class="scenario-selector">
-                    <div class="scenario-option active" data-id="raw_camera" onclick="selectScenario('raw_camera')">
-                        <strong>raw_camera.jpg</strong>
-                        <p>Straight output from mirrorless lens. Full original metadata layers preserved intact.</p>
-                    </div>
-                    <div class="scenario-option" data-id="instagram_filter" onclick="selectScenario('instagram_filter')">
-                        <strong>instagram_filter.jpg</strong>
-                        <p>Run through a VSCO preset, compressed, and stripped of all EXIF metadata by social infrastructure layers.</p>
-                    </div>
-                    <div class="scenario-option" data-id="generative_bg" onclick="selectScenario('generative_bg')">
-                        <strong>generative_bg.jpg</strong>
-                        <p>Real photo subject blended onto a fully synthetic background environment generated via Stable Diffusion.</p>
-                    </div>
-                </div>
-                <button class="action-btn animate-pulse" onclick="runAnalysis('image')">Verify Image Target</button>
-
-                <!-- DYNAMIC PERSONALIZATION CONFIGURATION PANEL -->
-                <div class="config-sub-section">
-                    <div class="config-label-row">
-                        <span>Personalize Reels Tag</span>
-                    </div>
-                    
-                    <div class="flex flex-col gap-1">
-                        <label class="config-label-row">Creator / Artist Name</label>
-                        <input type="text" id="tag-creator-name" oninput="updateTagPreview()" value="Verified Human" class="config-input-text" placeholder="e.g. Verified Human">
-                    </div>
-
-                    <div class="flex flex-col gap-1">
-                        <div class="config-label-row">
-                            <span>Horizontal X Offset</span>
-                            <span id="offset-x-lbl">10%</span>
-                        </div>
-                        <input type="range" id="tag-offset-x" min="5" max="85" value="10" oninput="updateTagOffset()" class="config-slider">
-                    </div>
-
-                    <div class="flex flex-col gap-1">
-                        <div class="config-label-row">
-                            <span>Vertical Offset</span>
-                            <span id="offset-y-val">25%</span>
-                        </div>
-                        <input type="range" id="tag-offset-y" min="5" max="85" value="25" oninput="updateTagOffset()" class="config-slider">
-                    </div>
-                </div>
-
-                <div class="upload-box" id="image-upload" onclick="triggerInput('image-file-input')">
-                    <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                    <span>Or Upload Your Own Image</span>
-                    <p>Drag & drop or click to browse</p>
-                    <input type="file" id="image-file-input" class="hidden-input" accept="image/*" onchange="handleUserUpload(this, 'image')">
-                </div>
-            </div>
-
-            <!-- PANEL 2: CONSOLE LOGS & CANVAS PREVIEW -->
-            <div class="panel center-panel">
-                <div class="panel-title">2. Processing Console Logs & Workspace Canvas</div>
-                 
-                <div class="terminal" id="console-logs">
-                    <div class="terminal-line neutral">> Ready engine deployment hooks. Select a configuration profile or upload your own file to run telemetry checks...</div>
-                </div>
-
-                <div class="output-zone" id="output-zone">
-                    <div class="output-placeholder" id="placeholder-text">
-                        Run engine verification matrix to compile active status output layers.
-                    </div>
-                     
-                    <div class="media-preview-canvas" id="media-canvas">
-                        <!-- INSTAGRAM APP LOOKALIKE SYSTEM OVERLAY NODE -->
-                        <div class="canvas-fading-watermark" id="fading-video-watermark">
-                            <div class="watermark-dot"></div>
-                            <span class="watermark-text" id="watermark-label-text">PROVENANT | 100% ORIGINAL</span>
-                        </div>
-                    </div>
-
-                    <button class="status-ready-tag" id="ready-banner">✨ VERIFICATION LOG ARCHIVE COMPLETE</button>
-                     
-                    <div class="download-badge-section" id="badge-download-deck">
-                        <div class="download-split-grid">
-                             
-                        <div class="download-column">
-                                <div class="download-badge-title">Layer 1: Instagram Avatar Stamp</div>
-                                <div class="badge-matrix-row">
-                                    <div class="matrix-pill-card selected" onclick="selectBadgeVariant(this, 'social')">
-                                        <div class="matrix-pill-label">Social</div>
-                                        <div class="badge-preview-pill">
-                                            <div class="pill-main-text">Provenant</div>
-                                            <div class="pill-highlight-text">Active</div>
-                                            <div class="pill-sub-text">Verified Human</div>
-                                        </div>
-                                    </div>
-                                    <div class="matrix-pill-card" onclick="selectBadgeVariant(this, 'dating')">
-                                        <div class="matrix-pill-label">Dating</div>
-                                        <div class="badge-preview-pill">
-                                            <div class="pill-main-text">Provenant</div>
-                                            <div class="pill-highlight-text">Authentic</div>
-                                            <div class="pill-sub-text">Real Human</div>
-                                        </div>
-                                    </div>
-                                    <div class="matrix-pill-card" onclick="selectBadgeVariant(this, 'pro')">
-                                        <div class="matrix-pill-label">Pro</div>
-                                        <div class="badge-preview-pill">
-                                            <div class="pill-main-text">Provenant</div>
-                                            <div class="pill-highlight-text">Active</div>
-                                            <div class="pill-sub-text">Human Verified</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button class="download-pill-trigger" onclick="downloadProfileBadge()">📥 Download Profile Avatar</button>
-                            </div>
-                             
-                            <div class="download-column">
-                                <div class="download-badge-title">Layer 2: Verified Feed Asset</div>
-                                <div class="check-preview-box">
-                                    <div class="box-dot">✓</div>
-                                    <span class="check-preview-text">PROVENANT | 100% ORIGINAL</span>
-                                </div>
-                                <button class="download-pill-trigger btn-green" onclick="downloadAuthenticatedMedia()">📥 Download Photo with Checkmark</button>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PANEL 3: VIDEO CONTROLS -->
-            <div class="panel">
-                <div class="panel-title">3. Video Feed Environments</div>
-                <div class="scenario-selector">
-                    <div class="scenario-option" data-id="youtube_master" onclick="selectScenario('youtube_master')">
-                        <strong>youtube_vlog_master.mp4</strong>
-                        <p>Raw edit export for YouTube. Cryptographic C2PA manifest metadata layer fully intact with verified timeline history.</p>
-                    </div>
-                    <div class="scenario-option" data-id="instagram_compressed" onclick="selectScenario('instagram_compressed')">
-                        <strong>instagram_reel_final.mp4</strong>
-                        <p>Video asset parsed out of Instagram CDN. Stripped of structural metadata and compressed heavily by network routing.</p>
-                    </div>
-                    <div class="scenario-option" data-id="deepfake_face" onclick="selectScenario('deepfake_face')">
-                        <strong>sponsored_review_deepfake.mp4</strong>
-                        <p>High-definition video review project with a localized frame-by-frame generative AI identity face-swap modification payload.</p>
-                    </div>
-                    <div class="scenario-option" data-id="audio_clone" onclick="selectScenario('audio_clone')">
-                        <strong>tiktok_promo_voiceclone.mp4</strong>
-                        <p>Visually authentic human capture backed by a synthetic voice track cloned via generative adversarial speech models.</p>
-                    </div>
-                </div>
-                <button class="action-btn" onclick="runAnalysis('video')">Verify Video Target</button>
-
-                <div class="upload-box" id="video-upload" onclick="triggerInput('video-file-input')">
-                    <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                    </svg>
-                    <span>Or Upload Your Own Video</span>
-                    <p>Drag & drop or click to browse</p>
-                    <input type="file" id="file-input-video" class="hidden-input" accept="video/*" onchange="handleUserUpload(this, 'video')">
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- NOTIFIER TOAST -->
-    <div id="custom-toast">
-        <span id="toast-icon">✓</span>
-        <span id="toast-message">Verification updated successfully!</span>
-    </div>
+    <title>Provenant | Mobile App UX Prototyper</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter & Fira Code Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- React 18 & ReactDOM 18 CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- Babel Standalone CDN -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <script>
-        const scenarios = {
-            raw_camera: {
-                name: 'raw_camera.jpg',
-                aiArtifacts: false,
-                format: 'format-landscape',
-                previewImg: 'https://images.unsplash.com/photo-1452784444945-3f422708fe5e?q=80&w=600&auto=format&fit=crop',
-                logDetails: [
-                    "Verifying cryptographic file header structures...", 
-                    "EXIF identity metrics read successfully.", 
-                    "Running spatial pixel matrix evaluation...",
-                    "Asset clear of structural adjustments."
-                ]
-            },
-            instagram_filter: {
-                name: 'instagram_filter.jpg',
-                aiArtifacts: false,
-                format: 'format-vertical',
-                previewImg: 'https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?q=80&w=400&auto=format&fit=crop',
-                logDetails: [
-                    "Verifying cryptographic file header structures...", 
-                    "Warning: Metadata layer missing or stripped.", 
-                    "Applying permissive ruleset fallback logic [BYPASS TRIGGERED].", 
-                    "Evaluating pixel compression artifacts...", 
-                    "No alterations discovered."
-                ]
-            },
-            generative_bg: {
-                name: 'generative_bg.jpg',
-                aiArtifacts: true,
-                type: 'diffusion',
-                logDetails: [
-                    "Verifying cryptographic file header structures...", 
-                    "Bypassing metadata layer check.", 
-                    "Analyzing frequency domains for mathematical pattern inconsistencies...", 
-                    "CRITICAL EXCEPTION: Discovered high-frequency diffusion artifacts matching GAN/Diffusion structural noise layout patterns."
-                ]
-            },
-            youtube_master: {
-                name: 'youtube_vlog_master.mp4',
-                aiArtifacts: false,
-                format: 'format-landscape',
-                previewImg: 'https://images.unsplash.com/photo-1542204172-e7052809a936?q=80&w=600&auto=format&fit=crop',
-                logDetails: [
-                    "Extracting video containers...",
-                    "Reading C2PA manifest metadata layers...",
-                    "Hardware-level sensor token validated successfully.",
-                    "Running pixel block movement checking architecture...",
-                    "Audio phase consistency check: 100% human match verified."
-                ]
-            },
-            instagram_compressed: {
-                name: 'instagram_reel_final.mp4',
-                aiArtifacts: false,
-                format: 'format-vertical',
-                previewImg: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=400&auto=format&fit=crop',
-                logDetails: [
-                    "Extracting video containers...",
-                    "Warning: Structural metadata tracks stripped by app layers.",
-                    "Applying adaptive fallback auditing checks [BYPASS HOOKS ACTIVE]...",
-                    "Analyzing pixel blending patterns for face/edge inconsistencies...",
-                    "No synthetic generation markers matched."
-                ]
-            },
-            deepfake_face: {
-                name: 'sponsored_review_deepfake.mp4',
-                aiArtifacts: true,
-                type: 'deepfake',
-                logDetails: [
-                    "Parsing video frame arrays...",
-                    "Scanning facial feature landing matrices across timeline tracks...",
-                    "CRITICAL EXCEPTION: Inconsistent edge blending pattern found at frame boundaries.",
-                    "Deceptive deepfake facial alignment signature isolated at index: 0.142"
-                ]
-            },
-            audio_clone: {
-                name: 'tiktok_promo_voiceclone.mp4',
-                aiArtifacts: true,
-                type: 'voiceclone',
-                logDetails: [
-                    "Parsing video frame arrays...",
-                    "Visual check: Human capture vectors appear authenticated...",
-                    "Isolating master audio layer components...",
-                    "CRITICAL EXCEPTION: Harmonic gap patterns discovered inside spectrum arrays matching synthetic AI voice clones."
-                ]
-            }
-        };
-
-        let currentScenarioId = 'raw_camera';
-        let activeBadgeVariant = 'social';
-
-        // Toast Orchestration System
-        function showToast(message, isSuccess = true) {
-            const toast = document.getElementById('custom-toast');
-            const toastMsg = document.getElementById('toast-message');
-            const toastIcon = document.getElementById('toast-icon');
-            
-            toastMsg.innerText = message;
-            if (isSuccess) {
-                toast.style.borderLeftColor = 'var(--success-green)';
-                toastIcon.innerText = '✓';
-                toastIcon.style.color = 'var(--success-green)';
-            } else {
-                toast.style.borderLeftColor = 'var(--brand-creator)';
-                toastIcon.innerText = '⚠️';
-                toastIcon.style.color = 'var(--brand-creator)';
-            }
-            
-            toast.style.display = 'flex';
-            toast.offsetHeight; // Force reflow
-            toast.style.opacity = '1';
-            
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => {
-                    toast.style.display = 'none';
-                }, 300);
-            }, 4000);
-        }
-
-        // Live Personalization Updates
-        function updateTagPreview() {
-            const creatorName = document.getElementById('tag-creator-name').value || "Verified Human";
-            const processedText = `PROVENANT • ${creatorName.toUpperCase()} (100% ORIGINAL)`;
-            
-            document.getElementById('watermark-label-text').innerText = processedText;
-            
-            const previewLabels = document.querySelectorAll('.check-preview-text');
-            previewLabels.forEach(lbl => {
-                lbl.innerText = processedText;
-            });
-        }
-
-        function updateTagOffset() {
-            const offsetX = document.getElementById('tag-offset-x').value;
-            const offsetY = document.getElementById('tag-offset-y').value;
-            
-            document.getElementById('offset-x-lbl').innerText = offsetX + "%";
-            document.getElementById('offset-y-val').innerText = offsetY + "%";
-            
-            const watermark = document.getElementById('fading-video-watermark');
-            watermark.style.left = offsetX + "%";
-            watermark.style.top = offsetY + "%";
-            watermark.style.right = "auto";
-            watermark.style.bottom = "auto";
-        }
-
-        function selectScenario(id) {
-            currentScenarioId = id;
-            document.querySelectorAll('.scenario-option').forEach(opt => opt.classList.remove('active'));
-            const dynamicOption = document.querySelector(`.scenario-option[data-id="${id}"]`);
-            if (dynamicOption) dynamicOption.classList.add('active');
-            
-            document.getElementById('console-logs').innerHTML = `<div class="terminal-line neutral">> Profile configuration switched to [${scenarios[id].name}]. Pipeline ready to execute...</div>`;
-            document.getElementById('placeholder-text').style.display = 'block';
-            document.getElementById('media-canvas').style.display = 'none';
-            document.getElementById('ready-banner').style.display = 'none';
-            document.getElementById('badge-download-deck').style.display = 'none';
-
-            // Reset visual fading watermark states
-            const watermark = document.getElementById('fading-video-watermark');
-            watermark.style.opacity = "0";
-            watermark.classList.remove('animated-video-overlay', 'animated-image-overlay');
-        }
-
-        function selectBadgeVariant(element, variantKey) {
-            activeBadgeVariant = variantKey;
-            document.querySelectorAll('.matrix-pill-card').forEach(card => card.classList.remove('selected'));
-            element.classList.add('selected');
-        }
-
-        function triggerInput(inputId) { document.getElementById(inputId).click(); }
-
-        function handleUserUpload(input, type) {
-            if (input.files && input.files[0]) {
-                const fileName = input.files[0].name;
-                const userUploadedUrl = URL.createObjectURL(input.files[0]);
-                
-                scenarios['user_custom_file'] = {
-                    name: fileName,
-                    aiArtifacts: false,
-                    format: type === 'image' ? 'format-landscape' : 'format-vertical',
-                    previewImg: type === 'image' ? userUploadedUrl : 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=600&auto=format&fit=crop',
-                    logDetails: [
-                        `Ingesting user payload streams: [${fileName}]...`,
-                        "Running real-time multi-layer decompression array matrices...",
-                        "Pixel clustering check: Authenticated human capturing vectors confirmed."
-                    ]
-                };
-
-                document.querySelectorAll('.scenario-option').forEach(opt => opt.classList.remove('active'));
-                currentScenarioId = 'user_custom_file';
-                document.getElementById('console-logs').innerHTML = `<div class="terminal-line success">> Ingested custom file: [${fileName}]. Ready to run diagnostics.</div>`;
-                document.getElementById('placeholder-text').style.display = 'block';
-                document.getElementById('media-canvas').style.display = 'none';
-                document.getElementById('ready-banner').style.display = 'none';
-                document.getElementById('badge-download-deck').style.display = 'none';
-                
-                // Clear any leftover animation on user uploads
-                document.getElementById('fading-video-watermark').className = 'canvas-fading-watermark';
-            }
-        }
-
-        document.querySelectorAll('.upload-box').forEach(box => {
-            box.addEventListener('dragover', (e) => { e.preventDefault(); box.classList.add('dragover'); });
-            box.addEventListener('dragleave', () => box.classList.remove('dragover'));
-            box.addEventListener('drop', (e) => {
-                e.preventDefault();
-                box.classList.remove('dragover');
-                const type = box.id === 'image-upload' ? 'image' : 'video';
-                const inputId = type === 'image' ? 'image-file-input' : 'video-file-input';
-                const inputElement = document.getElementById(inputId);
-                
-                if (e.dataTransfer.files.length > 0) {
-                    inputElement.files = e.dataTransfer.files;
-                    handleUserUpload(inputElement, type);
-                }
-            });
-        });
-
-        function runAnalysis(fallbackType) {
-            const consoleBox = document.getElementById('console-logs');
-            const placeholder = document.getElementById('placeholder-text');
-            const mediaCanvas = document.getElementById('media-canvas');
-            const readyBanner = document.getElementById('ready-banner');
-            const badgeDeck = document.getElementById('badge-download-deck');
-            const target = scenarios[currentScenarioId] || { logDetails: [], aiArtifacts: false };
-            const watermark = document.getElementById('fading-video-watermark');
-            
-            consoleBox.innerHTML = '';
-            placeholder.style.display = 'block';
-            placeholder.innerHTML = 'Ingesting stream payloads and compiling telemetry metrics...';
-            mediaCanvas.style.display = 'none';
-            readyBanner.style.display = 'none';
-            badgeDeck.style.display = 'none';
-            watermark.className = 'canvas-fading-watermark';
-            watermark.style.opacity = "0";
-
-            let step = 0;
-            function printNextLine() {
-                if (step < target.logDetails.length) {
-                    const lineText = target.logDetails[step];
-                    let lineClass = 'neutral';
-                    if (lineText.includes('Warning') || lineText.includes('BYPASS')) lineClass = 'bypass';
-                    else if (lineText.includes('CRITICAL')) lineClass = 'danger';
-                    else if (lineText.includes('validated') || lineText.includes('verified') || lineText.includes('successfully') || lineText.includes('confirmed')) lineClass = 'success';
-                    
-                    consoleBox.innerHTML += `<div class="terminal-line ${lineClass}">> ${lineText}</div>`;
-                    consoleBox.scrollTop = consoleBox.scrollHeight;
-                    step++;
-                    setTimeout(printNextLine, 400);
-                } else {
-                    placeholder.style.display = 'none';
-                    if (target.aiArtifacts) {
-                        consoleBox.innerHTML += `<div class="terminal-line danger">>>> CORE ENGINE VALIDATION REFUSED: Generative signatures found.</div>`;
-                        consoleBox.innerHTML += `<div class="terminal-line danger">> [POLICY ENFORCEMENT] Fraud detection triggered. Unauthorized use of Provenant tokens on synthetic media will result in immediate account revocation.</div>`;
-                        placeholder.style.display = 'block';
-                        placeholder.innerHTML = `<b style="color:#f43f5e;">⚠️ Verification Failed</b><br><span style="font-size:12px; color:var(--text-muted);">Asset corrupted by synthetic generation overrides. Licensing denied.</span>`;
-                    } else {
-                        consoleBox.innerHTML += `<div class="terminal-line success">>>> SUCCESS: Integrity clear. File cleared of generation overrides.</div>`;
-                        
-                        mediaCanvas.className = `media-preview-canvas ${target.format}`;
-                        mediaCanvas.style.backgroundImage = `url('${target.previewImg}')`;
-                        mediaCanvas.style.display = 'block';
-                        
-                        readyBanner.style.display = 'inline-block';
-                        badgeDeck.style.display = 'flex';
-
-                        // Restart animation loops perfectly safely by resetting offsets
-                        void watermark.offsetWidth; 
-
-                        // Assign proper fading timing sequence based on target type
-                        if (currentScenarioId.includes('mp4') || currentScenarioId === 'youtube_master' || currentScenarioId === 'instagram_compressed' || fallbackType === 'video') {
-                            watermark.classList.add('animated-video-overlay');
-                        } else {
-                            watermark.classList.add('animated-image-overlay');
-                        }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
                     }
                 }
             }
-            printNextLine();
         }
+    </script>
+    <style>
+        /* Custom scrollbar behaviors for terminal elements */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(225, 29, 72, 0.3);
+            border-radius: 10px;
+        }
+        .ig-gradient-ring {
+            background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
+        }
+    </style>
+</head>
+<body class="bg-[#05070f] text-[#f8fafc] min-h-screen p-4 md:p-8 flex items-center justify-center selection:bg-rose-500 selection:text-white font-sans">
 
-        // CO-BRANDED CIRCULAR TYPOGRAPHY PROFILE PICTURE GENERATION ENGINE
-        function downloadProfileBadge() {
-            const canvas = document.getElementById("media-canvas");
-            const computedStyle = window.getComputedStyle(canvas);
-            const bgUrlStr = computedStyle.backgroundImage.slice(5, -2);
-            
-            if (!bgUrlStr || bgUrlStr === "ne") {
-                showToast("Please run an engine scan on a valid image scenario first.", false);
-                return;
+    <!-- REACT ROOT NODE -->
+    <div id="root" class="w-full max-w-5xl"></div>
+
+    <!-- REACT SIMULATOR SCRIPT -->
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Crisp, native-looking inline SVG icons to ensure absolute visual consistency
+        const SparklesIcon = () => (
+          <svg className="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 21L7.188 15.904L2 15L7.188 14.096L9 9L9.813 14.096L15 15L9.813 15.904Z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.071 4.929L18.5 7L17.929 4.929L16.5 4.5L17.929 4.071L18.5 2L19.071 4.071L20.5 4.5L19.071 4.929Z" />
+          </svg>
+        );
+
+        const ShieldCheckIcon = ({ className = "w-6 h-6 text-emerald-400" }) => (
+          <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        );
+
+        const CameraIcon = () => (
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+          </svg>
+        );
+
+        const AdjustmentsIcon = () => (
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+          </svg>
+        );
+
+        const ShareIcon = () => (
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+          </svg>
+        );
+
+        function App() {
+          // Mobile UI States
+          const [activeTab, setActiveTab] = useState('capture'); // capture, timeline, export
+          const [creatorName, setCreatorName] = useState('Verified Human');
+          const [opacitySeconds, setOpacitySeconds] = useState(3); // Default fade after 3 seconds
+          const [isSigning, setIsSigning] = useState(false);
+          const [signatureComplete, setSignatureComplete] = useState(false);
+          const [toastMessage, setToastMessage] = useState('');
+          const [timelinePlay, setTimelinePlay] = useState(true);
+          const [timelineSecs, setTimelineSecs] = useState(0);
+
+          // Simulated Media Parameters
+          const [activeMedia, setActiveMedia] = useState('https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop');
+          const [mediaType, setMediaType] = useState('image'); // image, video (video simulates looping playback)
+
+          // Drag and Drop offset bounds (relative percentage)
+          const [offsetY, setOffsetY] = useState(15);
+          const [offsetX, setOffsetX] = useState(10);
+          const touchStartRef = useRef({ x: 0, y: 0, offX: 0, offY: 0 });
+          const viewportRef = useRef(null);
+
+          // Simulate active timeline playback for testing the exact fade durations
+          useEffect(() => {
+            let interval = null;
+            if (timelinePlay) {
+              interval = setInterval(() => {
+                setTimelineSecs((prev) => {
+                  if (prev >= 6.5) return 0;
+                  return Number((prev + 0.1).toFixed(1));
+                });
+              }, 100);
+            } else {
+              setTimelineSecs(0);
             }
+            return () => clearInterval(interval);
+          }, [timelinePlay]);
 
-            const hiddenCanvas = document.createElement("canvas");
-            const ctx = hiddenCanvas.getContext("2d");
+          // Dynamic Trigger Helper
+          const triggerToast = (msg) => {
+            setToastMessage(msg);
+            setTimeout(() => setToastMessage(''), 3000);
+          };
+
+          const runCryptographicSign = () => {
+            setIsSigning(true);
+            setSignatureComplete(false);
+            triggerToast("Initiating secure on-device frame processing...");
             
-            hiddenCanvas.width = 640;
-            hiddenCanvas.height = 640;
-            
-            const baseImg = new Image();
-            baseImg.crossOrigin = "anonymous";
-            baseImg.src = bgUrlStr;
-            
-            baseImg.onload = function() {
-                const centerX = 320;
-                const centerY = 320;
-                const avatarRadius = 190;
-                
-                ctx.fillStyle = "#090d16";
-                ctx.fillRect(0, 0, 640, 640);
+            // Simulate multi-step GPU hashing
+            setTimeout(() => {
+              setSignatureComplete(true);
+              setIsSigning(false);
+              triggerToast("C2PA Cryptographic token injected successfully!");
+              setActiveTab('timeline'); // Advance to timeline adjustment view
+            }, 2500);
+          };
 
-                ctx.strokeStyle = "rgba(225, 29, 72, 0.25)";
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, 280, 0, 2 * Math.PI);
-                ctx.stroke();
-
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, avatarRadius, 0, Math.PI * 2);
-                ctx.closePath();
-                ctx.clip();
-                
-                const imgRatio = baseImg.naturalWidth / baseImg.naturalHeight;
-                let drawW = 380;
-                let drawH = 380;
-                let drawX = 320 - 190;
-                let drawY = 320 - 190;
-                if (imgRatio > 1) {
-                    drawW = 380 * imgRatio;
-                    drawX = centerX - drawW / 2;
-                } else {
-                    drawH = 380 / imgRatio;
-                    drawY = centerY - drawH / 2;
-                }
-                ctx.drawImage(baseImg, drawX, drawY, drawW, drawH);
-                ctx.restore();
-                
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, avatarRadius + 4, 0, Math.PI * 2);
-                const gradient = ctx.createLinearGradient(130, 130, 510, 510);
-                gradient.addColorStop(0, '#f9ce34');
-                gradient.addColorStop(0.5, '#ee2a7b');
-                gradient.addColorStop(1, '#6228d7');
-                ctx.strokeStyle = gradient;
-                ctx.lineWidth = 8;
-                ctx.stroke();
-                ctx.restore();
-
-                const textRadius = 232;
-                drawTextAlongArc(ctx, "PROVENANT", centerX, centerY, textRadius, -Math.PI / 2, true);
-                drawTextAlongArc(ctx, "100% ORIGINAL CONTENT", centerX, centerY, textRadius, Math.PI / 2, false);
-
-                const badgeRadius = 36;
-                const angle = Math.PI * 0.25; 
-                const badgeX = centerX + (avatarRadius - 5) * Math.cos(angle);
-                const badgeY = centerY + (avatarRadius - 5) * Math.sin(angle);
-                
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(badgeX, badgeY, badgeRadius, 0, Math.PI * 2);
-                ctx.fillStyle = "#0f172a"; 
-                ctx.fill();
-                ctx.strokeStyle = "#00b894"; 
-                ctx.lineWidth = 3.5;
-                ctx.stroke();
-                ctx.restore();
-
-                ctx.save();
-                ctx.beginPath();
-                ctx.strokeStyle = "#00b894";
-                ctx.lineWidth = 5;
-                ctx.lineCap = "round";
-                ctx.lineJoin = "round";
-                ctx.moveTo(badgeX - 11, badgeY - 1);
-                ctx.lineTo(badgeX - 2, badgeY + 8);
-                ctx.lineTo(badgeX + 11, badgeY - 7);
-                ctx.stroke();
-                ctx.restore();
-                
-                const downloadDispatcher = document.createElement("a");
-                downloadDispatcher.download = `provenant_${activeBadgeVariant}_avatar_pic.png`;
-                downloadDispatcher.href = hiddenCanvas.toDataURL("image/png");
-                
-                document.body.appendChild(downloadDispatcher);
-                downloadDispatcher.click();
-                document.body.removeChild(downloadDispatcher);
-                showToast("Profile avatar stamp exported!");
+          const handleDragStart = (e) => {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            touchStartRef.current = {
+              x: clientX,
+              y: clientY,
+              offX: offsetX,
+              offY: offsetY
             };
-        }
+          };
 
-        function drawTextAlongArc(ctx, text, centerX, centerY, radius, angle, top) {
+          const handleDragMove = (e) => {
+            if (touchStartRef.current.x === 0 || !viewportRef.current) return;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            const deltaX = clientX - touchStartRef.current.x;
+            const deltaY = clientY - touchStartRef.current.y;
+
+            // Convert pixel dragging movements to responsive layout percentages
+            const rect = viewportRef.current.getBoundingClientRect();
+
+            const newX = Math.max(5, Math.min(65, touchStartRef.current.offX + (deltaX / rect.width) * 100));
+            const newY = Math.max(5, Math.min(85, touchStartRef.current.offY + (deltaY / rect.height) * 100));
+
+            setOffsetX(Number(newX.toFixed(1)));
+            setOffsetY(Number(newY.toFixed(1)));
+          };
+
+          const handleDragEnd = () => {
+            touchStartRef.current = { x: 0, y: 0, offX: 0, offY: 0 };
+          };
+
+          // Hard-bakes custom coords + metadata to guarantee IG upload stability
+          const triggerNativeExport = () => {
+            triggerToast("Baking flat pixel vectors to file... 🚀");
+            
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const baseImg = new Image();
+            
+            baseImg.crossOrigin = "anonymous";
+            baseImg.src = activeMedia;
+            
+            baseImg.onload = () => {
+              canvas.width = baseImg.naturalWidth;
+              canvas.height = baseImg.naturalHeight;
+              
+              // Draw background
+              ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
+              
+              // Scale coordinates relative to high-res source dimensions
+              const isVertical = canvas.height > canvas.width;
+              const baseDim = isVertical ? canvas.width : canvas.height;
+              const scalePillHeight = Math.floor(baseDim * 0.052);
+              const textVal = `PROVENANT • ${creatorName.toUpperCase()} (100% ORIGINAL)`;
+              
+              ctx.save();
+              ctx.font = `600 ${Math.floor(scalePillHeight * 0.38)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+              const textWidth = ctx.measureText(textVal).width;
+              const scalePillWidth = textWidth + (scalePillHeight * 1.7);
+              ctx.restore();
+
+              // Convert layout sliders directly to image pixel coordinates
+              const targetX = (canvas.width - scalePillWidth) * (offsetX / 100);
+              const targetY = (canvas.height - scalePillHeight) * (offsetY / 100);
+              
+              // Render backdrop
+              ctx.save();
+              ctx.fillStyle = "rgba(22, 24, 26, 0.76)";
+              ctx.beginPath();
+              ctx.roundRect(targetX, targetY, scalePillWidth, scalePillHeight, 30);
+              ctx.fill();
+              ctx.restore();
+              
+              // Draw green checkmark badge
+              const circleRadius = scalePillHeight * 0.28;
+              const circleX = targetX + (scalePillHeight * 0.42) + 2;
+              const circleY = targetY + (scalePillHeight * 0.5);
+              
+              ctx.save();
+              ctx.fillStyle = "#00b894";
+              ctx.beginPath();
+              ctx.arc(circleX, circleY, circleRadius, 0, 2 * Math.PI);
+              ctx.fill();
+              ctx.restore();
+              
+              // Draw checkmark ticks
+              ctx.save();
+              ctx.strokeStyle = "#ffffff";
+              ctx.lineWidth = Math.max(1.5, scalePillHeight * 0.05);
+              ctx.lineCap = "round";
+              ctx.lineJoin = "round";
+              ctx.beginPath();
+              const tick = circleRadius * 0.45;
+              ctx.moveTo(circleX - tick, circleY);
+              ctx.lineTo(circleX - tick * 0.1, circleY + tick * 0.9);
+              ctx.lineTo(circleX + tick * 1.1, circleY - tick * 0.7);
+              ctx.stroke();
+              ctx.restore();
+              
+              // Draw text values
+              ctx.save();
+              ctx.fillStyle = "#ffffff";
+              ctx.font = `600 ${Math.floor(scalePillHeight * 0.38)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+              ctx.textBaseline = "middle";
+              ctx.fillText(textVal, circleX + circleRadius + (scalePillHeight * 0.22), targetY + (scalePillHeight * 0.52));
+              ctx.restore();
+              
+              // Dispatch PNG
+              const link = document.createElement("a");
+              link.download = `provenant_secured_feed_${Date.now()}.png`;
+              link.href = canvas.toDataURL("image/png");
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              
+              triggerToast("Success! Render file ready for Instagram rolls.");
+            };
+          };
+
+          // Circular Avatar Renderer
+          const downloadCircularProfileAvatarStamp = () => {
+            triggerToast("Rendering curved typography stamp avatar... 🌀");
+            
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const baseImg = new Image();
+
+            canvas.width = 640;
+            canvas.height = 640;
+            baseImg.crossOrigin = "anonymous";
+            baseImg.src = activeMedia;
+
+            baseImg.onload = () => {
+              const centerX = 320;
+              const centerY = 320;
+              const radius = 190;
+
+              // Dark background container wrap
+              ctx.fillStyle = "#090d16";
+              ctx.fillRect(0, 0, 640, 640);
+
+              // Curved background hairlines
+              ctx.strokeStyle = "rgba(225, 29, 72, 0.25)";
+              ctx.lineWidth = 1.5;
+              ctx.beginPath();
+              ctx.arc(centerX, centerY, 280, 0, 2 * Math.PI);
+              ctx.stroke();
+
+              // Clip image to circular profile
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+              ctx.clip();
+
+              const imgRatio = baseImg.naturalWidth / baseImg.naturalHeight;
+              let drawW = 380, drawH = 380, drawX = 130, drawY = 130;
+              if (imgRatio > 1) {
+                drawW = 380 * imgRatio;
+                drawX = centerX - drawW / 2;
+              } else {
+                drawH = 380 / imgRatio;
+                drawY = centerY - drawH / 2;
+              }
+              ctx.drawImage(baseImg, drawX, drawY, drawW, drawH);
+              ctx.restore();
+
+              // Verification ring overlay
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(centerX, centerY, radius + 4, 0, Math.PI * 2);
+              const gradient = ctx.createLinearGradient(130, 130, 510, 510);
+              gradient.addColorStop(0, '#f9ce34');
+              gradient.addColorStop(0.5, '#ee2a7b');
+              gradient.addColorStop(1, '#6228d7');
+              ctx.strokeStyle = gradient;
+              ctx.lineWidth = 8;
+              ctx.stroke();
+              ctx.restore();
+
+              // Curved texts
+              drawTextAlongArc(ctx, "PROVENANT", centerX, centerY, 232, -Math.PI / 2, true);
+              drawTextAlongArc(ctx, "100% ORIGINAL CONTENT", centerX, centerY, 232, Math.PI / 2, false);
+
+              // Checkmark Badge Bottom Right
+              const badgeRadius = 36;
+              const angle = Math.PI * 0.25;
+              const badgeX = centerX + (radius - 5) * Math.cos(angle);
+              const badgeY = centerY + (radius - 5) * Math.sin(angle);
+
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(badgeX, badgeY, badgeRadius, 0, Math.PI * 2);
+              ctx.fillStyle = "#0f172a";
+              ctx.fill();
+              ctx.strokeStyle = "#00b894";
+              ctx.lineWidth = 3.5;
+              ctx.stroke();
+              ctx.restore();
+
+              // Checkmark vectors
+              ctx.save();
+              ctx.strokeStyle = "#00b894";
+              ctx.lineWidth = 5;
+              ctx.lineCap = "round";
+              ctx.lineJoin = "round";
+              ctx.beginPath();
+              ctx.moveTo(badgeX - 11, badgeY - 1);
+              ctx.lineTo(badgeX - 2, badgeY + 8);
+              ctx.lineTo(badgeX + 11, badgeY - 7);
+              ctx.stroke();
+              ctx.restore();
+
+              // Download trigger
+              const link = document.createElement("a");
+              link.download = `provenant_verified_avatar_stamp.png`;
+              link.href = canvas.toDataURL("image/png");
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              triggerToast("Circular avatar stamp downloaded!");
+            };
+          };
+
+          const drawTextAlongArc = (ctx, text, centerX, centerY, radius, angle, top) => {
             ctx.save();
             ctx.font = "900 19px 'Inter', sans-serif";
             ctx.fillStyle = "#ffffff";
             ctx.textAlign = "center";
             ctx.textBaseline = top ? "bottom" : "top";
 
-            let characters = text.split("");
-            let characterAngles = [];
+            const characters = text.split("");
+            const characterAngles = [];
             let totalAngle = 0;
 
             for (let i = 0; i < characters.length; i++) {
-                let charWidth = ctx.measureText(characters[i]).width;
-                let charAngle = (charWidth + 6) / radius; 
-                characterAngles.push(charAngle);
-                totalAngle += charAngle;
+              const charWidth = ctx.measureText(characters[i]).width;
+              const charAngle = (charWidth + 6) / radius;
+              characterAngles.push(charAngle);
+              totalAngle += charAngle;
             }
 
             let currentAngle = top ? angle - totalAngle / 2 : angle + totalAngle / 2;
 
             for (let i = 0; i < characters.length; i++) {
-                let charAngle = characterAngles[i];
-                if (top) {
-                    let targetAngle = currentAngle + charAngle / 2;
-                    ctx.save();
-                    ctx.translate(centerX + radius * Math.cos(targetAngle), centerY + radius * Math.sin(targetAngle));
-                    ctx.rotate(targetAngle + Math.PI / 2);
-                    ctx.fillText(characters[i], 0, 0);
-                    ctx.restore();
-                    currentAngle += charAngle;
-                } else {
-                    let targetAngle = currentAngle - charAngle / 2;
-                    ctx.save();
-                    ctx.translate(centerX + radius * Math.cos(targetAngle), centerY + radius * Math.sin(targetAngle));
-                    ctx.rotate(targetAngle - Math.PI / 2);
-                    ctx.fillText(characters[i], 0, 0);
-                    ctx.restore();
-                    currentAngle -= charAngle;
-                }
+              const charAngle = characterAngles[i];
+              if (top) {
+                const targetAngle = currentAngle + charAngle / 2;
+                ctx.save();
+                ctx.translate(centerX + radius * Math.cos(targetAngle), centerY + radius * Math.sin(targetAngle));
+                ctx.rotate(targetAngle + Math.PI / 2);
+                ctx.fillText(characters[i], 0, 0);
+                ctx.restore();
+                currentAngle += charAngle;
+              } else {
+                const targetAngle = currentAngle - charAngle / 2;
+                ctx.save();
+                ctx.translate(centerX + radius * Math.cos(targetAngle), centerY + radius * Math.sin(targetAngle));
+                ctx.rotate(targetAngle - Math.PI / 2);
+                ctx.fillText(characters[i], 0, 0);
+                ctx.restore();
+                currentAngle -= charAngle;
+              }
             }
             ctx.restore();
-        }
+          };
 
-        // REPLICATED NATIVE INSTAGRAM APP LOOKALIKE SYSTEM TAG HARD-BAKING CANVAS LOOP
-        // DYNAMIC POSITION SLIDERS ENFORCED DIRECTLY ON RENDER STEP
-        function downloadAuthenticatedMedia() {
-            const canvas = document.getElementById("media-canvas");
-            const computedStyle = window.getComputedStyle(canvas);
-            const bgUrlStr = computedStyle.backgroundImage.slice(5, -2);
-            
-            if (!bgUrlStr || bgUrlStr === "ne") {
-                showToast("No authenticated image source loaded.", false);
-                return;
+          const renderDashboardControls = () => {
+            switch(activeTab) {
+              case 'capture':
+                return (
+                  <div className="space-y-4 animate-[fadeIn_0.2s_ease-out]">
+                    <div className="bg-slate-900/60 border border-white/5 rounded-2xl p-4">
+                      <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Step 1: Secure Sensor Token</h4>
+                      <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+                        Before exporting to social feeds, Provenant™ signs original sensor streams with hardware signatures using your phone's native chipsets.
+                      </p>
+                      
+                      <div className="grid grid-cols-2 gap-2 mb-4">
+                        <button 
+                          onClick={() => {
+                            setMediaType('image');
+                            setActiveMedia('https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?q=80&w=400&auto=format&fit=crop');
+                            triggerToast("Imported live camera profile!");
+                          }}
+                          className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all border ${mediaType === 'image' ? 'bg-rose-500/10 border-rose-500 text-rose-400' : 'bg-slate-950/40 border-white/5 text-slate-400'}`}
+                        >
+                          📸 Camera Roll (JPG)
+                        </button>
+                        <button 
+                          onClick={() => {
+                            setMediaType('video');
+                            setActiveMedia('https://images.unsplash.com/photo-1542204172-e7052809a936?q=80&w=600&auto=format&fit=crop');
+                            triggerToast("Loaded verified raw MP4 project!");
+                          }}
+                          className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all border ${mediaType === 'video' ? 'bg-rose-500/10 border-rose-500 text-rose-400' : 'bg-slate-950/40 border-white/5 text-slate-400'}`}
+                        >
+                          🎥 Video Reel (MP4)
+                        </button>
+                      </div>
+
+                      <button 
+                        onClick={runCryptographicSign}
+                        disabled={isSigning}
+                        className="w-full bg-rose-600 hover:bg-rose-500 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {isSigning ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Executing GPU Telemetry...
+                          </>
+                        ) : (
+                          <>
+                            <ShieldCheckIcon className="w-4.5 h-4.5 text-white" />
+                            Sign & Verify Asset
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              case 'timeline':
+                return (
+                  <div className="space-y-4 animate-[fadeIn_0.2s_ease-out]">
+                    <div className="bg-slate-900/60 border border-white/5 rounded-2xl p-4 space-y-4">
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Step 2: Interactive Watermark Safe-Zone</h4>
+                        <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                          Avoid Instagram's layout crops. Drag the badge to any coordinates on the screen, personalize your text, and adjust the exact second it fades away.
+                        </p>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Reels Tag Text Name</label>
+                          <input 
+                            type="text" 
+                            value={creatorName}
+                            onChange={(e) => setCreatorName(e.target.value)}
+                            className="w-full bg-slate-950/60 border border-white/10 px-3 py-2.5 rounded-xl text-xs text-white outline-none focus:border-rose-500 mt-1.5 transition-colors"
+                            placeholder="e.g. Verified Human"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="flex justify-between items-center text-[10px] text-slate-400 uppercase tracking-widest font-bold">
+                            <span>Temporal Fade-Out Limit</span>
+                            <span className="text-rose-400 font-mono font-bold">{opacitySeconds} seconds</span>
+                          </div>
+                          <input 
+                            type="range" 
+                            min="1" 
+                            max="6" 
+                            step="0.5"
+                            value={opacitySeconds}
+                            onChange={(e) => setOpacitySeconds(parseFloat(e.target.value))}
+                            className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer mt-2 accent-rose-500"
+                          />
+                          <p className="text-[9px] text-slate-500 mt-1">Watermark fades completely to avoid IG profile system overlays.</p>
+                        </div>
+
+                        <div className="pt-2">
+                          <button 
+                            onClick={() => {
+                              setTimelinePlay(!timelinePlay);
+                              setTimelineSecs(0);
+                            }}
+                            className="w-full bg-slate-950/40 hover:bg-slate-950/60 border border-white/5 py-2.5 rounded-xl text-[10px] uppercase font-bold tracking-wider text-slate-300 transition-all flex items-center justify-center gap-1.5"
+                          >
+                            {timelinePlay ? "⏸️ Pause Timeline Simulation" : "▶️ Reset & Play Timeline"}
+                          </button>
+                        </div>
+                      </div>
+
+                      <button 
+                        onClick={() => setActiveTab('export')}
+                        className="w-full bg-rose-600 hover:bg-rose-500 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 mt-2"
+                      >
+                        Proceed to Export Setup
+                      </button>
+                    </div>
+                  </div>
+                );
+              case 'export':
+                return (
+                  <div className="space-y-4 animate-[fadeIn_0.2s_ease-out]">
+                    <div className="bg-slate-900/60 border border-white/5 rounded-2xl p-4 space-y-4">
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Step 3: Flatten & Ship</h4>
+                        <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                          Bake the completed metadata capsule directly into the native pixel arrays, completely immune to social network stripping.
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-slate-950/50 border border-white/5 rounded-xl space-y-2">
+                        <div className="flex justify-between text-[10px] font-mono">
+                          <span className="text-slate-500">C2PA HASH:</span>
+                          <span className="text-emerald-400 font-bold">#prv_6a9b40_ok</span>
+                        </div>
+                        <div className="flex justify-between text-[10px] font-mono">
+                          <span className="text-slate-500">OPACITY FADE:</span>
+                          <span className="text-slate-300">{opacitySeconds}s</span>
+                        </div>
+                        <div className="flex justify-between text-[10px] font-mono">
+                          <span className="text-slate-500">COORDS:</span>
+                          <span className="text-slate-300">X: {offsetX}% | Y: {offsetY}%</span>
+                        </div>
+                      </div>
+
+                      <button 
+                        onClick={triggerNativeExport}
+                        className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+                      >
+                        <ShareIcon />
+                        Bake & Download File
+                      </button>
+
+                      <button 
+                        onClick={downloadCircularProfileAvatarStamp}
+                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+                      >
+                        🌀 Download Circular Avatar Stamp
+                      </button>
+
+                      <button 
+                        onClick={() => {
+                          setActiveTab('capture');
+                          setSignatureComplete(false);
+                        }}
+                        className="w-full border border-white/10 hover:border-white/20 text-slate-300 py-2.5 rounded-xl text-xs font-bold transition-all"
+                      >
+                        Reset Prototyper
+                      </button>
+                    </div>
+                  </div>
+                );
             }
+          };
 
-            const hiddenCanvas = document.createElement("canvas");
-            const ctx = hiddenCanvas.getContext("2d");
-            const baseImg = new Image();
-            
-            baseImg.crossOrigin = "anonymous";
-            baseImg.src = bgUrlStr;
-            
-            baseImg.onload = function() {
-                hiddenCanvas.width = baseImg.naturalWidth;
-                hiddenCanvas.height = baseImg.naturalHeight;
+          return (
+            <div className="min-h-screen bg-slate-950 p-4 md:p-8 flex items-center justify-center">
+              <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 
-                // 1. Render baseline image file pixels
-                ctx.drawImage(baseImg, 0, 0, hiddenCanvas.width, hiddenCanvas.height);
-                
-                // 2. Configure relative platform sizing ratios to maintain true native scale layout
-                const isVertical = hiddenCanvas.height > hiddenCanvas.width;
-                const referenceDim = isVertical ? hiddenCanvas.width : hiddenCanvas.height;
-                
-                const pillHeight = Math.floor(referenceDim * 0.052); 
-                const radius = pillHeight / 2;
-                
-                // Collect customized text components from the sandbox inputs
-                const creatorName = document.getElementById('tag-creator-name').value || "Verified Human";
-                const badgeText = `PROVENANT • ${creatorName.toUpperCase()} (100% ORIGINAL)`;
-                
-                ctx.save();
-                ctx.font = `600 ${Math.floor(pillHeight * 0.38)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-                const textWidth = ctx.measureText(badgeText).width;
-                const pillWidth = textWidth + (radius * 3.4);
-                ctx.restore();
+                {/* DASHBOARD INSTRUCTION PANEL (LEFT COLUMN) */}
+                <div className="lg:col-span-6 space-y-6 text-left">
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold uppercase tracking-wider">
+                      <SparklesIcon />
+                      iOS & Android Companion Prototyper
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">
+                      Provenant™ App <br/>
+                      <span className="bg-gradient-to-r from-rose-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">Interactive Simulator</span>
+                    </h2>
+                    <p className="text-sm text-slate-400 leading-relaxed">
+                      Experience the upcoming native app workflow. Simulate biometric signatures, custom tag offsets, and visual timeline decays in an organic mobile environment before deployment.
+                    </p>
+                  </div>
 
-                // Compute Slider-Driven offsets directly on image pixels
-                const offsetXPercent = parseFloat(document.getElementById('tag-offset-x').value) / 100;
-                const offsetYPercent = parseFloat(document.getElementById('tag-offset-y').value) / 100;
+                  {/* DYNAMIC TAB HEADER FOR STEP-BY-STEP PROGRESS */}
+                  <div className="flex gap-2 border-b border-white/5 pb-2">
+                    <button 
+                      onClick={() => setActiveTab('capture')}
+                      className={`pb-2 text-xs font-bold uppercase tracking-wider transition-all ${activeTab === 'capture' ? 'border-b-2 border-rose-500 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                      1. Sensor Audit
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (!signatureComplete && activeTab === 'capture') {
+                          triggerToast("Please click 'Sign & Verify Asset' to run audits first!");
+                          return;
+                        }
+                        setActiveTab('timeline');
+                      }}
+                      className={`pb-2 text-xs font-bold uppercase tracking-wider transition-all ${activeTab === 'timeline' ? 'border-b-2 border-rose-500 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                      2. Timeline Safe-Zone
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (!signatureComplete && activeTab === 'capture') {
+                          triggerToast("Please click 'Sign & Verify Asset' to run audits first!");
+                          return;
+                        }
+                        setActiveTab('export');
+                      }}
+                      className={`pb-2 text-xs font-bold uppercase tracking-wider transition-all ${activeTab === 'export' ? 'border-b-2 border-rose-500 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                      3. Flat Export
+                    </button>
+                  </div>
 
-                const pillX = hiddenCanvas.width * offsetXPercent;
-                const pillY = hiddenCanvas.height * offsetYPercent;
-                
-                // 3. Render Translucent Backdrop Rounded Pill (Exact match to Instagram App CSS theme specs)
-                ctx.save();
-                ctx.fillStyle = "rgba(22, 24, 26, 0.76)"; // Instagram system background black token
-                ctx.beginPath();
-                ctx.roundRect(pillX, pillY, pillWidth, pillHeight, 30); // Rounded capsule native edges
-                ctx.fill();
-                ctx.restore();
-                
-                // 4. Draw System Emerald Circle
-                const circleRadius = pillHeight * 0.28;
-                const circleX = pillX + (pillHeight * 0.42) + 2;
-                const circleY = pillY + (pillHeight * 0.5);
-                
-                ctx.save();
-                ctx.fillStyle = "#00b894"; // System green
-                ctx.beginPath();
-                ctx.arc(circleX, circleY, circleRadius, 0, 2 * Math.PI);
-                ctx.fill();
-                ctx.restore();
-                
-                // Draw white checkmark lines inside circle vector track
-                ctx.save();
-                ctx.strokeStyle = "#ffffff";
-                ctx.lineWidth = Math.max(1.5, pillHeight * 0.05);
-                ctx.lineCap = "round";
-                ctx.lineJoin = "round";
-                ctx.beginPath();
-                const checkScale = circleRadius * 0.45;
-                ctx.moveTo(circleX - checkScale, circleY);
-                ctx.lineTo(circleX - checkScale * 0.1, circleY + checkScale * 0.9);
-                ctx.lineTo(circleX + checkScale * 1.1, circleY - checkScale * 0.7);
-                ctx.stroke();
-                ctx.restore();
-                
-                // 5. Print Typographical Content Loop using clean system font matching
-                ctx.save();
-                ctx.fillStyle = "#ffffff";
-                ctx.font = `600 ${Math.floor(pillHeight * 0.38)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-                ctx.textAlign = "left";
-                ctx.textBaseline = "middle";
-                ctx.fillText(badgeText, circleX + circleRadius + (pillHeight * 0.22), pillY + (pillHeight * 0.52));
-                ctx.restore();
-                
-                // 6. Export uncompressed lossless PNG file format
-                const downloadDispatcher = document.createElement("a");
-                downloadDispatcher.download = "provenant_instagram_secured_reel.png";
-                downloadDispatcher.href = hiddenCanvas.toDataURL("image/png");
-                
-                document.body.appendChild(downloadDispatcher);
-                downloadDispatcher.click();
-                document.body.removeChild(downloadDispatcher);
-                showToast("Co-branded secure asset downloaded!");
-            };
+                  {/* DYNAMIC DASHBOARD CONTROLS CONTAINER */}
+                  {renderDashboardControls()}
+                </div>
+
+                {/* HIGH-FIDELITY MOBILE PHONE SHELL VIEWPORT (RIGHT COLUMN) */}
+                <div className="lg:col-span-6 flex justify-center">
+                  <div className="relative w-[360px] h-[720px] bg-slate-950 rounded-[50px] border-[12px] border-slate-900 shadow-[0_25px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col justify-between p-4">
+                    
+                    {/* iOS System Top Notch Simulation */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-7 bg-slate-900 rounded-b-3xl z-[100] flex items-center justify-between px-6 text-[10px] font-bold text-white/90">
+                      <span className="text-[9px] -ml-2">10:55</span>
+                      <div className="w-16 h-3.5 bg-black rounded-full mx-auto"></div>
+                      <div className="flex items-center gap-1 -mr-2">
+                        <span>5G</span>
+                        <div className="w-4 h-2 border border-white/30 rounded-xs p-0.5 flex">
+                          <div className="bg-white flex-grow rounded-3xs"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* LIVE CAMERA / EDITOR WORKSPACE PORTAL */}
+                    <div className="relative w-full h-[460px] rounded-[32px] overflow-hidden mt-6 bg-black border border-white/5 flex items-center justify-center">
+                      
+                      {/* Active Media Raster */}
+                      <div 
+                        ref={viewportRef}
+                        onTouchStart={handleDragStart}
+                        onTouchMove={handleDragMove}
+                        onTouchEnd={handleDragEnd}
+                        onMouseDown={handleDragStart}
+                        onMouseMove={handleDragMove}
+                        onMouseUp={handleDragEnd}
+                        className="w-full h-full bg-cover bg-center transition-all duration-300 relative flex items-center justify-center"
+                        style={{ backgroundImage: `url('${activeMedia}')` }}
+                      >
+                        
+                        {/* Simulated C2PA Scanning Radar Overlay */}
+                        {isSigning && (
+                          <div className="absolute inset-0 bg-rose-500/10 backdrop-blur-2xs flex flex-col items-center justify-center gap-2 z-40 animate-[pulse_1s_infinite]">
+                            <div className="w-12 h-12 border-4 border-rose-500 border-t-transparent rounded-full animate-spin shadow-lg"></div>
+                            <span className="text-[10px] font-mono tracking-widest text-white uppercase font-black bg-rose-600/90 px-3 py-1 rounded shadow-md">
+                              GPU Verification Active
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Simulated Camera Grids */}
+                        {activeTab === 'capture' && !isSigning && (
+                          <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none opacity-40">
+                            <div className="border-r border-b border-white/20"></div>
+                            <div className="border-r border-b border-white/20"></div>
+                            <div className="border-b border-white/20"></div>
+                            <div className="border-r border-b border-white/20"></div>
+                            <div className="border-r border-b border-white/20"></div>
+                            <div className="border-b border-white/20"></div>
+                            <div className="border-r border-white/20"></div>
+                            <div className="border-r border-white/20"></div>
+                            <div></div>
+                          </div>
+                        )}
+
+                        {/* THE HIGHER-CONVERTING NATIVE INSTAGRAM STYLE BADGE PILL OVERLAY */}
+                        {signatureComplete && activeTab !== 'capture' && (
+                          <div 
+                            className="absolute select-none"
+                            style={{
+                              left: `${offsetX}%`,
+                              top: `${offsetY}%`,
+                              opacity: timelineSecs < opacitySeconds ? 1 : 0,
+                              transition: 'opacity 0.25s ease-out'
+                            }}
+                          >
+                            <div className="bg-zinc-950/75 border border-white/10 rounded-full px-3 py-1.5 flex items-center gap-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.4)] saturate-[180%] backdrop-blur-md">
+                              <div className="w-3.5 h-3.5 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_6px_rgba(0,184,148,0.4)]">
+                                <span className="text-[8px] font-extrabold text-white mt-[-1.5px]">✓</span>
+                              </div>
+                              <span className="text-[9px] font-semibold text-white font-sans tracking-wide uppercase whitespace-nowrap">
+                                PROVENANT • {creatorName.toUpperCase()} (100% ORIGINAL)
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Simulated Running Timeline Track Overlay */}
+                        {activeTab === 'timeline' && (
+                          <div className="absolute bottom-3 right-3 bg-black/60 border border-white/10 px-2 py-1 rounded text-[8px] font-mono text-slate-300">
+                            SIM SECS: {timelineSecs}s / {opacitySeconds}s
+                          </div>
+                        )}
+
+                      </div>
+                    </div>
+
+                    {/* MOBILE INTERFACE MENU ACTIVE TOOLBAR FOOTER */}
+                    <div className="w-full flex justify-between items-center px-4 py-2 border-t border-white/5 bg-slate-950/90 rounded-b-[40px] z-10">
+                      <button 
+                        onClick={() => setActiveTab('capture')}
+                        className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'capture' ? 'text-rose-500' : 'text-slate-400 hover:text-slate-200'}`}
+                      >
+                        <div className="p-1 rounded-xl bg-white/5">
+                          <CameraIcon />
+                        </div>
+                        <span className="text-[9px] font-bold uppercase tracking-wider">Secure</span>
+                      </button>
+
+                      <button 
+                        onClick={() => {
+                          if (!signatureComplete) {
+                            triggerToast("Audit raw camera/video frame parameters first!");
+                            return;
+                          }
+                          setActiveTab('timeline');
+                        }}
+                        className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'timeline' ? 'text-rose-500' : 'text-slate-400 hover:text-slate-200'}`}
+                      >
+                        <div className="p-1 rounded-xl bg-white/5">
+                          <AdjustmentsIcon />
+                        </div>
+                        <span className="text-[9px] font-bold uppercase tracking-wider">Safe-Zone</span>
+                      </button>
+
+                      <button 
+                        onClick={() => {
+                          if (!signatureComplete) {
+                            triggerToast("Audit raw camera/video frame parameters first!");
+                            return;
+                          }
+                          setActiveTab('export');
+                        }}
+                        className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'export' ? 'text-rose-500' : 'text-slate-400 hover:text-slate-200'}`}
+                      >
+                        <div className="p-1 rounded-xl bg-white/5">
+                          <ShareIcon />
+                        </div>
+                        <span className="text-[9px] font-bold uppercase tracking-wider">Export</span>
+                      </button>
+                    </div>
+
+                    {/* Simulated iOS Bottom Home Indicator */}
+                    <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/20 rounded-full"></div>
+
+                  </div>
+                </div>
+
+              </div>
+
+              {/* TOAST SYSTEM PORTAL */}
+              {toastMessage && (
+                <div className="fixed bottom-6 right-6 bg-slate-900 border border-white/10 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-[slideIn_0.25s_cubic-bezier(0.16,1,0.3,1)] z-[9999]">
+                  <div className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></div>
+                  <span className="text-xs font-semibold">{toastMessage}</span>
+                </div>
+              )}
+            </div>
+          );
         }
 
-        // Initialize values on first boot
-        window.onload = function() {
-            updateTagPreview();
-            updateTagOffset();
-        };
+        // Render App
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
     </script>
 </body>
 </html>
