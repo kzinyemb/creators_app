@@ -1,699 +1,587 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6B0NP15RYC"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+import React, { useState, useEffect, useRef } from 'react';
 
-      gtag('config', 'G-6B0NP15RYC');
-    </script>
+// Crisp, native-looking inline SVG icons to ensure absolute visual consistency
+const SparklesIcon = () => (
+  <svg className="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 21L7.188 15.904L2 15L7.188 14.096L9 9L9.813 14.096L15 15L9.813 15.904Z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.071 4.929L18.5 7L17.929 4.929L16.5 4.5L17.929 4.071L18.5 2L19.071 4.071L20.5 4.5L19.071 4.929Z" />
+  </svg>
+);
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Provenant | Mobile Forensic Suite & Prototyper</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter & Fira Code Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+const ShieldCheckIcon = ({ className = "w-6 h-6 text-emerald-400" }) => (
+  <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+  </svg>
+);
+
+const CameraIcon = () => (
+  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+  </svg>
+);
+
+const AdjustmentsIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+  </svg>
+);
+
+const ShareIcon = () => (
+  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+  </svg>
+);
+
+export default function App() {
+  // Mobile UI States
+  const [activeTab, setActiveTab] = useState('capture'); // capture, timeline, export
+  const [creatorName, setCreatorName] = useState('Verified Human');
+  const [opacitySeconds, setOpacitySeconds] = useState(3); // Default fade after 3 seconds
+  const [isSigning, setIsSigning] = useState(false);
+  const [signatureComplete, setSignatureComplete] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [timelinePlay, setTimelinePlay] = useState(true);
+  const [timelineSecs, setTimelineSecs] = useState(0);
+
+  // Simulated Media Parameters
+  const [activeMedia, setActiveMedia] = useState('https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop');
+  const [mediaType, setMediaType] = useState('image'); // image, video (video simulates looping playback)
+
+  // Drag and Drop offset bounds (relative percentage)
+  const [offsetY, setOffsetY] = useState(15);
+  const [offsetX, setOffsetX] = useState(10);
+  const touchStartRef = useRef({ x: 0, y: 0, offX: 0, offY: 0 });
+
+  // Simulate active timeline playback for testing the exact fade durations
+  useEffect(() => {
+    let interval = null;
+    if (timelinePlay) {
+      interval = setInterval(() => {
+        setTimelineSecs((prev) => {
+          if (prev >= 6.5) return 0;
+          return Number((prev + 0.1).toFixed(1));
+        });
+      }, 100);
+    } else {
+      setTimelineSecs(0);
+    }
+    return () => clearInterval(interval);
+  }, [timelinePlay]);
+
+  // Dynamic Trigger Helper
+  const triggerToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(''), 3000);
+  };
+
+  const runCryptographicSign = () => {
+    setIsSigning(true);
+    setSignatureComplete(false);
+    triggerToast("Initiating secure on-device frame processing...");
     
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['Fira Code', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Custom scrollbar behaviors for terminal elements */
-        .custom-scroll::-webkit-scrollbar {
-            width: 4px;
-        }
-        .custom-scroll::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-        }
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: rgba(225, 29, 72, 0.3);
-            border-radius: 10px;
-        }
-    </style>
-</head>
-<body class="bg-[#05070f] text-[#f8fafc] min-h-screen p-4 md:p-8 flex items-center justify-center selection:bg-rose-500 selection:text-white font-sans">
+    // Simulate multi-step GPU hashing
+    setTimeout(() => {
+      setSignatureComplete(true);
+      setIsSigning(false);
+      triggerToast("C2PA Cryptographic token injected successfully!");
+      setActiveTab('timeline'); // Advance to timeline adjustment view
+    }, 2500);
+  };
 
-    <div class="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        <!-- LEFT COLUMN: CREATOR DASHBOARD CONTROLS & MARKETING CONTEXT -->
-        <div class="lg:col-span-5 space-y-6 text-left">
-            <div class="space-y-3">
-                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold uppercase tracking-wider">
-                    ✨ Native App UX Prototyper
-                </div>
-                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">
-                    Provenant™ Mobile <br/>
-                    <span class="bg-gradient-to-r from-rose-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">Forensic & Safe-Zone Editor</span>
-                </div>
-                <p class="text-sm text-slate-400 leading-relaxed">
-                    A unified mobile experience. Step through secure capture handshakes, select forensic analysis scenarios from our original sandbox, personalize your creator name, and test safe-zone coordinate positioning to bypass social media crops and algorithmic penalties.
+  const handleDragStart = (e) => {
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    touchStartRef.current = {
+      x: clientX,
+      y: clientY,
+      offX: offsetX,
+      offY: offsetY
+    };
+  };
+
+  const handleDragMove = (e) => {
+    if (touchStartRef.current.x === 0) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    const deltaX = clientX - touchStartRef.current.x;
+    const deltaY = clientY - touchStartRef.current.y;
+
+    // Convert pixel dragging movements to responsive layout percentages
+    const boundsWidth = 320; 
+    const boundsHeight = 440;
+
+    const newX = Math.max(5, Math.min(65, touchStartRef.current.offX + (deltaX / boundsWidth) * 100));
+    const newY = Math.max(5, Math.min(85, touchStartRef.current.offY + (deltaY / boundsHeight) * 100));
+
+    setOffsetX(Number(newX.toFixed(1)));
+    setOffsetY(Number(newY.toFixed(1)));
+  };
+
+  const handleDragEnd = () => {
+    touchStartRef.current = { x: 0, y: 0, offX: 0, offY: 0 };
+  };
+
+  // Hard-bakes custom coords + metadata to guarantee IG upload stability
+  const triggerNativeExport = () => {
+    triggerToast("Baking flat pixel vectors to file... 🚀");
+    
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const baseImg = new Image();
+    
+    baseImg.crossOrigin = "anonymous";
+    baseImg.src = activeMedia;
+    
+    baseImg.onload = () => {
+      canvas.width = baseImg.naturalWidth;
+      canvas.height = baseImg.naturalHeight;
+      
+      // Draw background
+      ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
+      
+      // Scale coordinates relative to high-res source dimensions
+      const isVertical = canvas.height > canvas.width;
+      const baseDim = isVertical ? canvas.width : canvas.height;
+      const scalePillHeight = Math.floor(baseDim * 0.052);
+      const textVal = `PROVENANT • ${creatorName.toUpperCase()} (100% ORIGINAL)`;
+      
+      ctx.save();
+      ctx.font = `600 ${Math.floor(scalePillHeight * 0.38)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+      const textWidth = ctx.measureText(textVal).width;
+      const scalePillWidth = textWidth + (scalePillHeight * 1.7);
+      ctx.restore();
+
+      // Convert layout sliders directly to image pixel coordinates
+      const targetX = (canvas.width - scalePillWidth) * (offsetX / 100);
+      const targetY = (canvas.height - scalePillHeight) * (offsetY / 100);
+      
+      // Render backdrop
+      ctx.save();
+      ctx.fillStyle = "rgba(22, 24, 26, 0.76)";
+      ctx.beginPath();
+      ctx.roundRect(targetX, targetY, scalePillWidth, scalePillHeight, 30);
+      ctx.fill();
+      ctx.restore();
+      
+      // Draw green checkmark badge
+      const circleRadius = scalePillHeight * 0.28;
+      const circleX = targetX + (scalePillHeight * 0.42) + 2;
+      const circleY = targetY + (scalePillHeight * 0.5);
+      
+      ctx.save();
+      ctx.fillStyle = "#00b894";
+      ctx.beginPath();
+      ctx.arc(circleX, circleY, circleRadius, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.restore();
+      
+      // Draw checkmark ticks
+      ctx.save();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = Math.max(1.5, scalePillHeight * 0.05);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      const tick = circleRadius * 0.45;
+      ctx.moveTo(circleX - tick, circleY);
+      ctx.lineTo(circleX - tick * 0.1, circleY + tick * 0.9);
+      ctx.lineTo(circleX + tick * 1.1, circleY - tick * 0.7);
+      ctx.stroke();
+      ctx.restore();
+      
+      // Draw text values
+      ctx.save();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `600 ${Math.floor(scalePillHeight * 0.38)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+      ctx.textBaseline = "middle";
+      ctx.fillText(textVal, circleX + circleRadius + (scalePillHeight * 0.22), targetY + (scalePillHeight * 0.52));
+      ctx.restore();
+      
+      // Dispatch PNG
+      const link = document.createElement("a");
+      link.download = `provenant_secured_feed_${Date.now()}.png`;
+      link.href = canvas.toDataURL("image/png");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      triggerToast("Success! Render file ready for Instagram rolls.");
+    };
+  };
+
+  const renderDashboardControls = () => {
+    switch(activeTab) {
+      case 'capture':
+        return (
+          <div className="space-y-4 animate-[fadeIn_0.2s_ease-out]">
+            <div className="bg-slate-900/60 border border-white/5 rounded-2xl p-4">
+              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Step 1: Secure Sensor Token</h4>
+              <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+                Before exporting to social feeds, Provenant™ signs original sensor streams with hardware signatures using your phone's native chipsets.
+              </p>
+              
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                <button 
+                  onClick={() => {
+                    setMediaType('image');
+                    setActiveMedia('https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?q=80&w=400&auto=format&fit=crop');
+                    triggerToast("Imported live camera profile!");
+                  }}
+                  className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all border ${mediaType === 'image' ? 'bg-rose-500/10 border-rose-500 text-rose-400' : 'bg-slate-950/40 border-white/5 text-slate-400'}`}
+                >
+                  📸 Camera Roll (JPG)
+                </button>
+                <button 
+                  onClick={() => {
+                    setMediaType('video');
+                    setActiveMedia('https://images.unsplash.com/photo-1542204172-e7052809a936?q=80&w=600&auto=format&fit=crop');
+                    triggerToast("Loaded verified raw MP4 project!");
+                  }}
+                  className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all border ${mediaType === 'video' ? 'bg-rose-500/10 border-rose-500 text-rose-400' : 'bg-slate-950/40 border-white/5 text-slate-400'}`}
+                >
+                  🎥 Video Reel (MP4)
+                </button>
+              </div>
+
+              <button 
+                onClick={runCryptographicSign}
+                disabled={isSigning}
+                className="w-full bg-rose-600 hover:bg-rose-500 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isSigning ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Executing GPU Telemetry...
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheckIcon className="w-4.5 h-4.5 text-white" />
+                    Sign & Verify Asset
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        );
+      case 'timeline':
+        return (
+          <div className="space-y-4 animate-[fadeIn_0.2s_ease-out]">
+            <div className="bg-slate-900/60 border border-white/5 rounded-2xl p-4 space-y-4">
+              <div>
+                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Step 2: Interactive Watermark Safe-Zone</h4>
+                <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                  Avoid Instagram's layout crops. Drag the badge to any coordinates on the screen, personalize your text, and adjust the exact second it fades away.
                 </p>
-            </div>
+              </div>
 
-            <!-- PERSONALIZATION CONFIGURE CARD -->
-            <div class="bg-slate-900/60 border border-white/5 rounded-2xl p-5 space-y-4 shadow-xl">
+              <div className="space-y-3">
                 <div>
-                    <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Asset Personalization Loop</h4>
-                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">Type your actual creator or brand name as you want it to appear inside the co-branded Reels attribution pill.</p>
+                  <label className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Reels Tag Text Name</label>
+                  <input 
+                    type="text" 
+                    value={creatorName}
+                    onChange={(e) => setCreatorName(e.target.value)}
+                    className="w-full bg-slate-950/60 border border-white/10 px-3 py-2.5 rounded-xl text-xs text-white outline-none focus:border-rose-500 mt-1.5 transition-colors"
+                    placeholder="e.g. Verified Human"
+                  />
                 </div>
+
                 <div>
-                    <input type="text" id="creator-input" oninput="updateTagPreview()" value="Verified Human" class="w-full bg-slate-950/60 border border-white/10 px-3 py-2.5 rounded-xl text-xs text-white outline-none focus:border-rose-500 mt-1.5 transition-colors">
+                  <div className="flex justify-between items-center text-[10px] text-slate-400 uppercase tracking-widest font-bold">
+                    <span>Temporal Fade-Out Limit</span>
+                    <span className="text-rose-400 font-mono font-bold">{opacitySeconds} seconds</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="1" 
+                    max="6" 
+                    step="0.5"
+                    value={opacitySeconds}
+                    onChange={(e) => setOpacitySeconds(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer mt-2 accent-rose-500"
+                  />
+                  <p className="text-[9px] text-slate-500 mt-1">Watermark fades completely to avoid IG profile system overlays.</p>
                 </div>
+
+                <div className="pt-2">
+                  <button 
+                    onClick={() => {
+                      setTimelinePlay(!timelinePlay);
+                      setTimelineSecs(0);
+                    }}
+                    className="w-full bg-slate-950/40 hover:bg-slate-950/60 border border-white/5 py-2.5 rounded-xl text-[10px] uppercase font-bold tracking-wider text-slate-300 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    {timelinePlay ? "⏸️ Pause Timeline Simulation" : "▶️ Reset & Play Timeline"}
+                  </button>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setActiveTab('export')}
+                className="w-full bg-rose-600 hover:bg-rose-500 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 mt-2"
+              >
+                Proceed to Export Setup
+              </button>
             </div>
+          </div>
+        );
+      case 'export':
+        return (
+          <div className="space-y-4 animate-[fadeIn_0.2s_ease-out]">
+            <div className="bg-slate-900/60 border border-white/5 rounded-2xl p-4 space-y-4">
+              <div>
+                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Step 3: Flatten & Ship</h4>
+                <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                  Bake the completed metadata capsule directly into the native pixel arrays, completely immune to social network stripping.
+                </p>
+              </div>
 
-            <!-- PROVENANT VIDEO ACADEMY SECTION -->
-            <div class="space-y-4">
-                <div class="space-y-1">
-                    <h3 class="text-xl font-bold text-white">Provenant Academy Video Tutorials</h3>
-                    <p class="text-sm text-slate-400">Step-by-step video walkthroughs on mastering safe-zone crops and deploying authentic asset signatures.</p>
+              <div className="p-3 bg-slate-950/50 border border-white/5 rounded-xl space-y-2">
+                <div className="flex justify-between text-[10px] font-mono">
+                  <span className="text-slate-500">C2PA HASH:</span>
+                  <span className="text-emerald-400 font-bold">#prv_6a9b40_ok</span>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <button onclick="playAcademyVideo('X65hM65O41c')" class="group p-3 bg-slate-900/50 border border-white/5 rounded-xl flex items-center gap-3 transition-colors hover:border-rose-500/30 text-left">
-                        <div class="w-20 h-14 bg-slate-800 rounded-lg overflow-hidden flex-shrink-0 relative">
-                            <img src="https://img.youtube.com/vi/X65hM65O41c/0.jpg" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
-                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                            </div>
-                        </div>
-                        <div class="space-y-1">
-                            <h5 class="text-xs font-bold text-white group-hover:text-rose-400">1. Mastering Safe-Zone Watermarking</h5>
-                            <p class="text-[10px] text-slate-400">Bypass standard social media crops.</p>
-                        </div>
-                    </button>
+                <div className="flex justify-between text-[10px] font-mono">
+                  <span className="text-slate-500">OPACITY FADE:</span>
+                  <span className="text-slate-300">{opacitySeconds}s</span>
+                </div>
+                <div className="flex justify-between text-[10px] font-mono">
+                  <span className="text-slate-500">COORDS:</span>
+                  <span className="text-slate-300">X: {offsetX}% | Y: {offsetY}%</span>
+                </div>
+              </div>
 
-                    <button onclick="playAcademyVideo('jLz6fUqY0wA')" class="group p-3 bg-slate-900/50 border border-white/5 rounded-xl flex items-center gap-3 transition-colors hover:border-rose-500/30 text-left">
-                        <div class="w-20 h-14 bg-slate-800 rounded-lg overflow-hidden flex-shrink-0 relative">
-                            <img src="https://img.youtube.com/vi/jLz6fUqY0wA/0.jpg" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
-                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                            </div>
-                        </div>
-                        <div class="space-y-1">
-                            <h5 class="text-xs font-bold text-white group-hover:text-rose-400">2. Deploying Provenant via GitHub Pages</h5>
-                            <p class="text-[10px] text-slate-400">Generate your first public verification link.</p>
-                        </div>
-                    </button>
-                </div>
+              <button 
+                onClick={triggerNativeExport}
+                className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+              >
+                <ShareIcon />
+                Bake & Download File
+              </button>
+
+              <button 
+                onClick={() => {
+                  setActiveTab('capture');
+                  setSignatureComplete(false);
+                }}
+                className="w-full border border-white/10 hover:border-white/20 text-slate-300 py-2.5 rounded-xl text-xs font-bold transition-all"
+              >
+                Reset Prototyper
+              </button>
             </div>
-        </div>
+          </div>
+        );
+    }
+  };
 
-        <!-- RIGHT COLUMN: IPHONE PHONE SHELL MOCKUP -->
-        <div class="lg:col-span-7 flex justify-center sticky top-8">
-            <div class="relative w-[340px] h-[680px] bg-slate-950 rounded-[48px] border-[10px] border-slate-900 shadow-[0_25px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col justify-between p-3 select-none">
-                
-                <!-- iOS System Status Top Notch Bar -->
-                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-36 h-6 bg-slate-900 rounded-b-2xl z-[100] flex items-center justify-between px-5 text-[9px] font-bold text-white/90">
-                    <span class="text-[8px] -ml-1">10:55</span>
-                    <div class="w-14 h-3 bg-black rounded-full mx-auto"></div>
-                    <div class="flex items-center gap-1 -mr-1">
-                        <span>5G</span>
-                        <div class="w-3.5 h-2 border border-white/30 rounded-xs p-0.5 flex">
-                            <div class="bg-white flex-grow rounded-3xs"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- MAIN LIVE IMAGE / EDITING FEED FRAME -->
-                <div class="relative w-full h-[450px] rounded-[28px] overflow-hidden mt-5 bg-black border border-white/5 flex items-center justify-center">
-                    
-                    <!-- Base Media Mock Canvas -->
-                    <div id="active-media-bg" class="w-full h-full bg-cover bg-center transition-all duration-300 relative flex items-center justify-center" style="background-image: url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop');">
-                        
-                        <!-- Simulated GPU Radar Scan Overlay -->
-                        <div id="scan-radar-screen" class="absolute inset-0 bg-rose-500/10 backdrop-blur-[1px] hidden flex-col items-center justify-center gap-2 z-40">
-                            <div class="w-10 h-10 border-4 border-rose-500 border-t-transparent rounded-full animate-spin shadow-lg"></div>
-                            <span class="text-[9px] font-mono tracking-widest text-white uppercase font-black bg-rose-600/90 px-2.5 py-1 rounded shadow-md">
-                                Secure Enclave Signing
-                            </span>
-                        </div>
-
-                        <!-- Camera Guide Overlays -->
-                        <div id="camera-rules-grid" class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none opacity-20">
-                            <div class="border-r border-b border-white/30"></div>
-                            <div class="border-r border-b border-white/30"></div>
-                            <div class="border-b border-white/30"></div>
-                            <div class="border-r border-b border-white/30"></div>
-                            <div class="border-r border-b border-white/30"></div>
-                            <div class="border-b border-white/30"></div>
-                            <div class="border-r border-white/30"></div>
-                            <div class="border-r border-white/30"></div>
-                            <div></div>
-                        </div>
-
-                        <!-- CO-BRANDED INTERACTIVE NATIVE APP ATTRIBUTION STAMP OVERLAY -->
-                        <div id="sim-watermark-pill" 
-                             class="absolute bg-zinc-950/75 border border-white/10 rounded-full px-3 py-1.5 flex items-center gap-1.5 shadow-2xl backdrop-blur-md cursor-grab active:cursor-grabbing select-none hidden z-50 transition-opacity duration-200"
-                             style="left: 15%; top: 20%;">
-                            <div class="w-3.5 h-3.5 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_6px_rgba(0,184,148,0.4)]">
-                                <span class="text-[8px] font-extrabold text-white mt-[-1.5px]">✓</span>
-                            </div>
-                            <span id="sim-watermark-text" class="text-[9px] font-semibold text-white font-sans tracking-wide uppercase whitespace-nowrap">
-                                PROVENANT • VERIFIED HUMAN (100% ORIGINAL)
-                            </span>
-                        </div>
-
-                        <!-- Running simulation timer marker -->
-                        <div id="timeline-secs-tag" class="absolute bottom-3 right-3 bg-black/60 border border-white/10 px-2 py-1 rounded text-[8px] font-mono text-slate-300 hidden">
-                            SIM TIME: <span id="sim-sec-val">0.0s</span>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- DYNAMIC CONTEXTUAL OPERATION PANELS (Simulating Tabs) -->
-                <div class="flex-grow w-full bg-slate-900 border border-white/5 p-4 rounded-t-xl rounded-b-[36px] -mt-10 z-10 flex flex-col justify-between custom-scroll overflow-y-auto">
-                    
-                    <!-- TAB 1: Handshake -->
-                    <div id="pane-handshake" class="space-y-3 mobile-pane">
-                        <div class="text-left">
-                            <h4 class="text-xs font-bold text-white uppercase">1. Biometric Handshake</h4>
-                            <p class="text-[10px] text-slate-400 mt-0.5">Sealing device camera metadata via local biometric audit loops.</p>
-                        </div>
-                        <div class="p-3 bg-slate-950/40 border border-white/10 rounded-xl space-y-2">
-                            <label class="text-[10px] font-bold text-slate-300">Device Sensor Token</label>
-                            <span class="block text-[11px] font-mono font-bold text-rose-400 bg-black/40 px-2.5 py-1 rounded">PRV_IOS_SENSOR_14Pro_7H9Jk_OK</span>
-                        </div>
-                        <button onclick="executeSecureSigning()" id="sign-btn" class="w-full bg-rose-600 hover:bg-rose-500 text-white py-3 rounded-xl font-bold text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-rose-600/10">
-                            🛡️ Execute Secure Handshake
-                        </button>
-                    </div>
-
-                    <!-- TAB 2: Telemetry Analysis -->
-                    <div id="pane-telemetry" class="hidden space-y-3 mobile-pane">
-                        <div class="text-left">
-                            <h4 class="text-xs font-bold text-white uppercase">2. Forensic Scenario Audit</h4>
-                            <p class="text-[10px] text-slate-400 mt-0.5">Reading core file hashes against known AI generation patterns.</p>
-                        </div>
-                        <select id="telemetry-scenario" onchange="runForensicTelemetry()" class="w-full bg-slate-950 border border-white/10 px-3 py-2.5 rounded-xl text-xs text-white outline-none focus:border-rose-500 transition-colors">
-                            <option value="raw_camera">Select Audit Environment...</option>
-                            <option value="raw_camera">Environment A: raw_camera.jpg (100% Clean)</option>
-                            <option value="instagram_filter">Environment B: instagram_compressed.mp4 (100% Clean)</option>
-                            <option value="generative_bg">Environment C: generative_bg.jpg (Flag Diffusion)</option>
-                            <option value="deepfake_face">Environment D: deepfake_review.mp4 (Flag FaceSwap)</option>
-                        </select>
-                        <div class="bg-black border border-white/5 rounded-xl p-3 font-mono text-[9px] text-sky-400 space-y-0.5 text-left h-24 overflow-y-auto custom-scroll">
-                            <div id="tel-log-1">Provenant Telemetry Pipeline [active]</div>
-                            <div id="tel-log-2" class="opacity-70">> HANDSHAKE STATUS: Cert Verified</div>
-                            <div id="tel-log-3" class="opacity-40">Awaiting environment payload...</div>
-                            <div id="tel-log-4" class="opacity-20"></div>
-                        </div>
-                    </div>
-
-                    <!-- TAB 3: Safe-Zone Personalization -->
-                    <div id="pane-safezone" class="hidden space-y-3 mobile-pane">
-                        <div class="text-left">
-                            <h4 class="text-xs font-bold text-white uppercase">3. Safe-Zone Coordinate Editor</h4>
-                            <p class="text-[10px] text-slate-400 mt-0.5">Drag the co-branded pill on the media canvas to find standard safe-zone bounds.</p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 text-left">
-                            <div class="bg-slate-950 border border-white/10 p-2 rounded-lg">
-                                <span class="text-[9px] text-slate-500 font-bold uppercase">Horizontal X</span>
-                                <span id="label-x-offset" class="block text-xl font-black text-rose-400 mt-[-2px]">15%</span>
-                            </div>
-                            <div class="bg-slate-950 border border-white/10 p-2 rounded-lg">
-                                <span class="text-[9px] text-slate-500 font-bold uppercase">Vertical Y</span>
-                                <span id="label-y-offset" class="block text-xl font-black text-rose-400 mt-[-2px]">20%</span>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center text-[10px] text-slate-300 font-bold uppercase">
-                            <span>Temporal Fade-Out Duration</span>
-                            <span id="fade-time-val" class="font-mono text-rose-400 font-bold">3 seconds</span>
-                        </div>
-                        <input type="range" id="fade-slider" min="1" max="6" step="0.5" value="3" oninput="updateFadeDuration()" class="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer mt-1.5 accent-rose-500">
-                    </div>
-
-                    <!-- TAB 4: Export secured binary asset -->
-                    <div id="pane-export" class="hidden space-y-3 mobile-pane">
-                        <div class="text-left">
-                            <h4 class="text-xs font-bold text-white uppercase">4. Direct Binary Export</h4>
-                            <p class="text-[10px] text-slate-400 mt-0.5">Hard-baking vector attribution direct into file pixels.</p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3 text-left">
-                            <div class="bg-slate-950 border border-white/10 p-3 rounded-xl space-y-1.5 col-span-2">
-                                <div class="w-20 h-20 rounded-full border-[6px] border-rose-500 ig-gradient-ring flex items-center justify-center p-2 mx-auto relative shadow-xl shadow-rose-500/10">
-                                    <div class="absolute inset-0 rounded-full bg-cover bg-center transition-all duration-300" style="background-image: url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop');"></div>
-                                    <div class="absolute -bottom-1 -right-1 w-8 h-8 bg-zinc-950 rounded-full flex items-center justify-center border-2 border-emerald-500 text-emerald-500 shadow-xl">
-                                        ✓
-                                    </div>
-                                </div>
-                                <h6 class="text-[10px] text-white font-bold text-center">Verified Avatar Stamp</h6>
-                                <button onclick="downloadCircularAvatar()" class="w-full bg-white/5 border border-white/10 py-1.5 rounded-lg text-[10px] uppercase font-bold tracking-wider text-slate-300 transition-colors hover:bg-white/10">
-                                    📥 Download Profile Pic
-                                </button>
-                            </div>
-
-                            <div class="col-span-2 space-y-2">
-                                <div class="bg-black/60 border border-emerald-500/30 rounded-full p-2.5 flex items-center gap-2.5 shadow-[0_0_20px_rgba(0,184,148,0.1)]">
-                                    <div class="w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg text-[9px] font-black text-white mt-[-1px]">
-                                        ✓
-                                    </div>
-                                    <span class="text-[10px] font-bold text-white font-sans uppercase tracking-wide whitespace-nowrap">PROVENANT • [CREATOR NAME]</span>
-                                </div>
-                                <p class="text-[9px] text-slate-500 px-1 text-center">Bakes the specialized co-branded 'Provenant • Creator Name' attribution pill direct to the top-left Instagram safe zone bounds we refined earlier.</p>
-                                <button onclick="downloadFlattenedImage()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-emerald-600/10">
-                                    📥 Flatten & Bake Top-Left Badge
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- PHONE INTERFACE ACTIVE SCREEN MENU BAR (Unified Tabs) -->
-                <div class="w-full flex justify-between items-center px-4 py-1.5 border-t border-white/5 bg-slate-950 rounded-b-[36px] z-10">
-                    <button onclick="switchMobileTab('handshake')" id="nav-shake" class="flex flex-col items-center gap-1 text-rose-500 transition-colors">
-                        <div class="p-1.5 rounded-xl bg-white/5">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 009 11a5 5 0 00-10 0c0 1.02.304 1.962.83 2.753m11.17 0c1.02-.304 1.962.83 2.753 11.17 0c1.02-.304 1.962.83 2.753 11.17 0c3.517 1.009 6.799 2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 0015 11a5 5 0 00-10 0c0 1.02.304 1.962.83 2.753m11.17 0c1.02-.304 1.962.83 2.753"/></svg>
-                        </div>
-                        <span class="text-[8px] font-bold uppercase tracking-wider">Shake</span>
-                    </button>
-                    <button onclick="switchMobileTab('telemetry')" id="nav-tel" class="flex flex-col items-center gap-1 text-slate-400 transition-colors">
-                        <div class="p-1.5 rounded-xl bg-white/5">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2"/><path d="M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41"/></svg>
-                        </div>
-                        <span class="text-[8px] font-bold uppercase tracking-wider">Audit</span>
-                    </button>
-                    <button onclick="switchMobileTab('safezone')" id="nav-safe" class="flex flex-col items-center gap-1 text-slate-400 transition-colors">
-                        <div class="p-1.5 rounded-xl bg-white/5">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"/></svg>
-                        </div>
-                        <span class="text-[8px] font-bold uppercase tracking-wider">Safe</span>
-                    </button>
-                    <button onclick="switchMobileTab('export')" id="nav-export" class="flex flex-col items-center gap-1 text-slate-400 transition-colors">
-                        <div class="p-1.5 rounded-xl bg-white/5">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
-                        </div>
-                        <span class="text-[8px] font-bold uppercase tracking-wider">Binary</span>
-                    </button>
-                </div>
-
-                <!-- Simulated iOS Bottom Home Indicator line -->
-                <div class="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-28 h-1 bg-white/20 rounded-full"></div>
-
-            </div>
-        </div>
-    </div>
-
-    <!-- TOAST POPUP GATEWAY -->
-    <div id="custom-toast" class="fixed bottom-6 right-6 bg-slate-900 border border-white/10 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none z-[99999]">
-        <div class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></div>
-        <span id="toast-message-text" class="text-xs font-semibold">Initiating secure handshake...</span>
-    </div>
-
-    <!-- VIDEO OVERLAY PLAYER -->
-    <div id="video-academy-overlay" class="fixed inset-0 bg-black/90 z-[10000] p-6 hidden flex flex-col items-center justify-center gap-4 text-center select-none" onclick="closeAcademyVideo()">
-        <div class="w-full max-w-4xl bg-slate-900 rounded-3xl border border-white/10 p-2 shadow-2xl overflow-hidden relative aspect-video" onclick="event.stopPropagation()">
-            <iframe id="academy-iframe" class="w-full h-full rounded-2xl" src="" title="Provenant Academy Tutorial" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-        </div>
-        <button class="bg-rose-600/20 border border-rose-500 text-rose-300 px-6 py-2 rounded-full font-bold text-xs uppercase tracking-wider">✕ Close Walkthrough Video</button>
-    </div>
-
-    <script>
-        // Core State Variables
-        let mockMediaType = 'image'; // Current active scene: image or video
-        let isSecuredHandshakeCertified = false;
-        let activeMobileTab = 'handshake';
-        let fadeSeconds = 3;
-        let timelineInterval = null;
+  return (
+    <div className="min-h-screen bg-slate-950 p-4 md:p-8 flex items-center justify-center">
+      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         
-        // Co-branded pill coordinate offsets (standard 15% / 20% safe zones)
-        let currentOffsetX = 15;
-        let currentOffsetY = 20;
+        {/* DASHBOARD INSTRUCTION PANEL (LEFT COLUMN) */}
+        <div className="lg:col-span-6 space-y-6 text-left">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold uppercase tracking-wider">
+              <SparklesIcon />
+              iOS & Android Companion Prototyper
+            </div>
+            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">
+              Provenant™ App <br/>
+              <span className="bg-gradient-to-r from-rose-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent">Interactive Simulator</span>
+            </h2>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              Experience the upcoming native app workflow. Simulate biometric signatures, custom tag offsets, and visual timeline decays in an organic mobile environment before deployment.
+            </p>
+          </div>
 
-        // Personalized Creator / Brand Name (Updated by Left Dashboard)
-        let creatorAttributionName = "Verified Human";
-
-        // Combined Forensic Scenarios and Logs (Merged from sandbox.html)
-        const forensicEnvironments = {
-            raw_camera: {
-                artifacts: false,
-                logs: ["> Executing secure hash validation...", "> Telemetry matches raw sensor input.", "> spatial pixel check: 100% human."]
-            },
-            instagram_filter: {
-                artifacts: false,
-                logs: ["> Extraction failed. structural metadata tracks stripped by app layers.", ">Fallback check [BYPASS HOOKS] triggered...", "> analyzing movement patterns: authentic capture confirmed."]
-            },
-            generative_bg: {
-                artifacts: true,
-                logs: ["> Reading container frequency...", "> CRITICAL EXCEPTION: Discover noise artifacts matching Diffusion patterns.", "> Asset Refused."]
-            },
-            deepfake_face: {
-                artifacts: true,
-                logs: ["> Parsing facial indices...", "> CRITICAL EXCEPTION: স্থানীয় blending patterns inconsistent with timeline history.", "> local deepfake detected at index 0.142"]
-            }
-        };
-
-        // Standard sample media sources
-        const samples = {
-            image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=600&auto=format&fit=crop',
-            video: 'https://images.unsplash.com/photo-1542204172-e7052809a936?q=80&w=600&auto=format&fit=crop'
-        };
-
-        // Visual State Helpers
-        function showToast(message) {
-            const toast = document.getElementById('custom-toast');
-            document.getElementById('toast-message-text').innerText = message;
-            toast.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-            toast.classList.add('opacity-100', 'translate-y-0');
-            setTimeout(() => {
-                toast.classList.remove('opacity-100', 'translate-y-0');
-                toast.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-            }, 3000);
-        }
-
-        function writeMobileTelemetryLog(lineText) {
-            const log1 = document.getElementById('tel-log-1');
-            const log2 = document.getElementById('tel-log-2');
-            const log3 = document.getElementById('tel-log-3');
-            const log4 = document.getElementById('tel-log-4');
-            log4.innerText = log3.innerText;
-            log4.className = log3.className;
-            log3.innerText = log2.innerText;
-            log3.className = log2.className;
-            log2.innerText = log1.innerText;
-            log2.className = log1.className;
-            log1.innerText = `${lineText}`;
-        }
-
-        // Tab Switching Engine (Within the mobile phone mockup shell)
-        function switchMobileTab(targetTab) {
-            if (targetTab !== 'handshake' && !isSecuredHandshakeCertified) {
-                showToast("⚠️ Execute Secure Handshake required!");
-                return;
-            }
-            activeMobileTab = targetTab;
-            
-            // Update Menu Header Tabs UI
-            document.querySelectorAll('[id^="nav-"]').forEach(btn => btn.className = 'flex flex-col items-center gap-1 text-slate-400 transition-colors');
-            document.getElementById(`nav-${targetTab.substring(0,3)}`).className = 'flex flex-col items-center gap-1 text-rose-500 transition-colors';
-
-            // Update Panel Views
-            document.querySelectorAll('.mobile-pane').forEach(pane => pane.classList.add('hidden'));
-            document.getElementById(`pane-${targetTab}`).classList.remove('hidden');
-
-            // Reset simulator layers
-            const watermark = document.getElementById('sim-watermark-pill');
-            const cameraGrid = document.getElementById('camera-rules-grid');
-
-            if (targetTab === 'safezone') {
-                watermark.classList.remove('hidden');
-                cameraGrid.classList.add('opacity-0');
-                triggerWatermarkSimulation();
-            } else {
-                watermark.classList.add('hidden');
-                cameraGrid.classList.remove('opacity-0');
-                clearInterval(timelineInterval);
-            }
-        }
-
-        // Unified Personalization (Syncs text to preview pill and co-branded labels)
-        function updateTagPreview() {
-            const inputVal = document.getElementById('creator-input').value || "Verified Human";
-            creatorAttributionName = inputVal.toUpperCase();
-            
-            // Sync current visible preview pill text
-            const processedText = `PROVENANT • ${creatorAttributionName} (100% ORIGINAL)`;
-            document.getElementById('sim-watermark-text').innerText = processedText;
-            writeMobileTelemetryLog(`Name text updated: [${inputVal}]`);
-        }
-
-        function updateFadeDuration() {
-            fadeSeconds = parseFloat(document.getElementById('fade-slider').value);
-            document.getElementById('fade-time-val').innerText = `${fadeSeconds} seconds`;
-            writeMobileTelemetryLog(`Decay time set to: ${fadeSeconds}s`);
-            if (activeMobileTab === 'safezone') triggerWatermarkSimulation();
-        }
-
-        // Execution Engines
-        function executeSecureSigning() {
-            if (isSecuredHandshakeCertified) return;
-            const signBtn = document.getElementById('sign-btn');
-            
-            signBtn.innerText = "🌀 Waiting for secure enclave cert...";
-            document.getElementById('scan-radar-screen').classList.remove('hidden');
-            showToast("Verifying original sensor token...");
-            
-            setTimeout(() => {
-                isSecuredHandshakeCertified = true;
-                document.getElementById('scan-radar-screen').classList.add('hidden');
-                writeMobileTelemetryLog(`CERTIFICATION COMPLETE. Binary hash generated.`);
-                showToast("Success! Biometric audit certified.");
-                signBtn.innerText = "✓ Hardware Shake Verified";
-                signBtn.className = signBtn.className.replace('bg-rose-600 hover:bg-rose-500', 'bg-slate-700 cursor-not-allowed');
-                
-                // Advance to Telemetry Audit Tab automatically
-                switchMobileTab('telemetry');
-            }, 2500);
-        }
-
-        // Running Combined Forensic Scenarios within the Mobile Shell UI
-        function runForensicTelemetry() {
-            const scenarioId = document.getElementById('telemetry-scenario').value;
-            const environment = forensicEnvironments[scenarioId];
-            
-            // Update media background visually to reflect selected environment
-            mockMediaType = scenarioId.includes('mp4') ? 'video' : 'image';
-            document.getElementById('active-media-bg').style.backgroundImage = `url('${samples[mockMediaType]}')`;
-            showToast(`Loading scene parameters: [${scenarioId}]`);
-
-            let logIndex = 0;
-            writeMobileTelemetryLog(`Initiating forensics for: ${scenarioId}...`);
-            const logInterval = setInterval(() => {
-                if (logIndex < environment.logs.length) {
-                    writeMobileTelemetryLog(environment.logs[logIndex]);
-                    logIndex++;
-                } else {
-                    clearInterval(logInterval);
-                    if (environment.artifacts) {
-                        writeMobileTelemetryLog(`[ POLICY REFUSED ] Generation pattern identified.`);
-                        writeMobileTelemetryLog(`Asset denied licensing.`);
-                    } else {
-                        writeMobileTelemetryLog(`[ INTEGRITY OK ] File cleared of overrides.`);
-                        writeMobileTelemetryLog(`Success! Proceded to safe-zone editor.`);
-                        switchMobileTab('safezone');
-                    }
+          {/* DYNAMIC TAB HEADER FOR STEP-BY-STEP PROGRESS */}
+          <div className="flex gap-2 border-b border-white/5 pb-2">
+            <button 
+              onClick={() => setActiveTab('capture')}
+              className={`pb-2 text-xs font-bold uppercase tracking-wider transition-all ${activeTab === 'capture' ? 'border-b-2 border-rose-500 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+              1. Sensor Audit
+            </button>
+            <button 
+              onClick={() => {
+                if (!signatureComplete && activeTab === 'capture') {
+                  triggerToast("Please click 'Sign & Verify Asset' to run audits first!");
+                  return;
                 }
-            }, 1000);
-        }
-
-        // Simulating the automatic fade-out based on chosen temporal duration
-        function triggerWatermarkSimulation() {
-            clearInterval(timelineInterval);
-            let currentTime = 0.0;
-            const watermark = document.getElementById('sim-watermark-pill');
-            const secsTag = document.getElementById('timeline-secs-tag');
-            const valSpan = document.getElementById('sim-sec-val');
-
-            watermark.style.opacity = '1';
-            secsTag.classList.remove('hidden');
-            valSpan.innerText = "0.0s";
-
-            timelineInterval = setInterval(() => {
-                currentTime += 0.1;
-                currentTime = parseFloat(currentTime.toFixed(1));
-                valSpan.innerText = `${currentTime}s`;
-
-                if (currentTime >= fadeSeconds) {
-                    watermark.style.opacity = '0';
+                setActiveTab('timeline');
+              }}
+              className={`pb-2 text-xs font-bold uppercase tracking-wider transition-all ${activeTab === 'timeline' ? 'border-b-2 border-rose-500 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+              2. Timeline Safe-Zone
+            </button>
+            <button 
+              onClick={() => {
+                if (!signatureComplete && activeTab === 'capture') {
+                  triggerToast("Please click 'Sign & Verify Asset' to run audits first!");
+                  return;
                 }
+                setActiveTab('export');
+              }}
+              className={`pb-2 text-xs font-bold uppercase tracking-wider transition-all ${activeTab === 'export' ? 'border-b-2 border-rose-500 text-white' : 'text-slate-500 hover:text-slate-300'}`}
+            >
+              3. Flat Export
+            </button>
+          </div>
 
-                if (currentTime >= 6.0) {
-                    clearInterval(timelineInterval);
-                    secsTag.classList.add('hidden');
-                }
-            }, 100);
-        }
+          {/* DYNAMIC DASHBOARD CONTROLS CONTAINER */}
+          {renderDashboardControls()}
+        </div>
 
-        // Draggable co-branded pill logic with boundary safety
-        const pill = document.getElementById('sim-watermark-pill');
-        const bg = document.getElementById('active-media-bg');
-        let isDragging = false;
-        let startX, startY, initialLeft, initialTop;
-
-        function onDragStart(e) {
-            if (activeMobileTab !== 'safezone') return;
-            isDragging = true;
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            startX = clientX;
-            startY = clientY;
-            initialLeft = parseFloat(pill.style.left);
-            initialTop = parseFloat(pill.style.top);
-            pill.classList.remove('transition-opacity');
-        }
-
-        function onDragMove(e) {
-            if (!isDragging) return;
-            e.preventDefault();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            const bgRect = bg.getBoundingClientRect();
+        {/* HIGH-FIDELITY MOBILE PHONE SHELL VIEWPORT (RIGHT COLUMN) */}
+        <div className="lg:col-span-6 flex justify-center">
+          <div className="relative w-[360px] h-[720px] bg-slate-950 rounded-[50px] border-[12px] border-slate-900 shadow-[0_25px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col justify-between p-4">
             
-            // Compute percentage-based coordinates within viewport frame bounds
-            const newXPercent = initialLeft + ((clientX - startX) / bgRect.width) * 100;
-            const newYPercent = initialTop + ((clientY - startY) / bgRect.height) * 100;
+            {/* iOS System Top Notch Simulation */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-7 bg-slate-900 rounded-b-3xl z-[100] flex items-center justify-between px-6 text-[10px] font-bold text-white/90">
+              <span className="text-[9px] -ml-2">10:55</span>
+              <div className="w-16 h-3.5 bg-black rounded-full mx-auto"></div>
+              <div className="flex items-center gap-1 -mr-2">
+                <span>5G</span>
+                <div className="w-4 h-2 border border-white/30 rounded-xs p-0.5 flex">
+                  <div className="bg-white flex-grow rounded-3xs"></div>
+                </div>
+              </div>
+            </div>
 
-            currentOffsetX = Math.max(2, Math.min(68, newXPercent));
-            currentOffsetY = Math.max(2, Math.min(92, newYPercent));
-
-            // Apply relative percentage positioning to move pill node
-            pill.style.left = `${currentOffsetX.toFixed(1)}%`;
-            pill.style.top = `${currentOffsetY.toFixed(1)}%`;
-            
-            // Sync UI metric labels
-            document.getElementById('label-x-offset').innerText = `${currentOffsetX.toFixed(0)}%`;
-            document.getElementById('label-y-offset').innerText = `${currentOffsetY.toFixed(0)}%`;
-        }
-
-        function onDragEnd() {
-            isDragging = false;
-            pill.classList.add('transition-opacity');
-            writeMobileTelemetryLog(`Locked: X:${currentOffsetX.toFixed(0)} Y:${currentOffsetY.toFixed(0)}`);
-        }
-
-        // MouseListeners
-        pill.addEventListener('mousedown', onDragStart);
-        window.addEventListener('mousemove', onDragMove);
-        window.addEventListener('mouseup', onDragEnd);
-        // Mobile TouchListeners
-        pill.addEventListener('touchstart', onDragStart);
-        window.addEventListener('touchmove', onDragMove, { passive: false });
-        window.addEventListener('touchend', onDragEnd);
-
-        // Binary Hard-Baking and Export Engines (Lossless PNG rendering loops)
-        function downloadCircularAvatar() {
-            showToast("Baking profile avatar stamp... 🌀");
-            writeMobileTelemetryLog(`Render executing: Verified Avatar Pic.`);
-            
-            const hiddenCanvas = document.createElement("canvas");
-            const ctx = hiddenCanvas.getContext("2d");
-            const baseImg = new Image();
-            
-            baseImg.crossOrigin = "anonymous";
-            baseImg.src = samples[mockMediaType];
-            
-            baseImg.onload = function() {
-                hiddenCanvas.width = 600;
-                hiddenCanvas.height = 600;
-                const centerX = 300, centerY = 300, radius = 240;
+            {/* LIVE CAMERA / EDITOR WORKSPACE PORTAL */}
+            <div className="relative w-full h-[460px] rounded-[32px] overflow-hidden mt-6 bg-black border border-white/5 flex items-center justify-center">
+              
+              {/* Active Media Raster */}
+              <div 
+                className="w-full h-full bg-cover bg-center transition-all duration-300 relative flex items-center justify-center"
+                style={{ backgroundImage: `url('${activeMedia}')` }}
+              >
                 
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-                ctx.clip();
-                const imgRatio = baseImg.naturalWidth / baseImg.naturalHeight;
-                let drawW=600, drawH=600, drawX=0, drawY=0;
-                if (imgRatio > 1) { drawW = 600*imgRatio; drawX = -(drawW-600)/2; }
-                else { drawH = 600/imgRatio; drawY = -(drawH-600)/2; }
-                ctx.drawImage(baseImg, drawX, drawY, drawW, drawH);
-                ctx.restore();
-                
-                // Premium Verification Ring Gradient
-                ctx.save();
-                ctx.beginPath(); ctx.arc(centerX, centerY, radius-4, 0, Math.PI * 2);
-                const gradient = ctx.createLinearGradient(0, 0, 600, 600);
-                gradient.addColorStop(0, '#f9ce34'); gradient.addColorStop(0.5, '#ee2a7b'); gradient.addColorStop(1, '#6228d7');
-                ctx.strokeStyle = gradient; ctx.lineWidth = 12; ctx.stroke();
-                ctx.restore();
+                {/* Simulated C2PA Scanning Radar Overlay */}
+                {isSigning && (
+                  <div className="absolute inset-0 bg-rose-500/10 backdrop-blur-2xs flex flex-col items-center justify-center gap-2 animate-[pulse_1s_infinite]">
+                    <div className="w-12 h-12 border-4 border-rose-500 border-t-transparent rounded-full animate-spin shadow-lg"></div>
+                    <span className="text-[10px] font-mono tracking-widest text-white uppercase font-black bg-rose-600/90 px-3 py-1 rounded shadow-md">
+                      GPU Verification Active
+                    </span>
+                  </div>
+                )}
 
-                // Draw Checkmark seal bottom right
-                const checkX = centerX + radius * Math.cos(Math.PI*0.25) - 15, checkY = centerY + radius * Math.sin(Math.PI*0.25) - 15;
-                ctx.save();
-                ctx.beginPath(); ctx.arc(checkX, checkY, 50, 0, Math.PI * 2); ctx.fillStyle = "#0f172a"; ctx.fill();
-                ctx.strokeStyle = "#00b894"; ctx.lineWidth = 4; ctx.stroke();
-                ctx.restore();
-                ctx.beginPath(); ctx.strokeStyle = "#00b894"; ctx.lineWidth = 6; ctx.lineCap = "round"; ctx.moveTo(checkX-15, checkY); ctx.lineTo(checkX-3, checkY+12); ctx.lineTo(checkX+15, checkY-12); ctx.stroke();
+                {/* Simulated Camera Grids */}
+                {activeTab === 'capture' && !isSigning && (
+                  <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none opacity-40">
+                    <div className="border-r border-b border-white/20"></div>
+                    <div className="border-r border-b border-white/20"></div>
+                    <div className="border-b border-white/20"></div>
+                    <div className="border-r border-b border-white/20"></div>
+                    <div className="border-r border-b border-white/20"></div>
+                    <div className="border-b border-white/20"></div>
+                    <div className="border-r border-white/20"></div>
+                    <div className="border-r border-white/20"></div>
+                    <div></div>
+                  </div>
+                )}
 
-                // Download lossless binary output
-                const dispatcher = document.createElement("a"); dispatcher.download = `provenant_verified_avatar_stamp.png`;
-                dispatcher.href = hiddenCanvas.toDataURL("image/png");
-                document.body.appendChild(dispatcher); dispatcher.click(); document.body.removeChild(dispatcher);
-                showToast("Success! Circular Profile pic ready.");
-            };
-        }
+                {/* THE HIGHER-CONVERTING NATIVE INSTAGRAM STYLE BADGE PILL OVERLAY */}
+                {signatureComplete && activeTab !== 'capture' && (
+                  <div 
+                    onTouchStart={handleDragStart}
+                    onTouchMove={handleDragMove}
+                    onTouchEnd={handleDragEnd}
+                    onMouseDown={handleDragStart}
+                    onMouseMove={handleDragMove}
+                    onMouseUp={handleDragEnd}
+                    className="absolute cursor-grab active:cursor-grabbing select-none"
+                    style={{
+                      left: `${offsetX}%`,
+                      top: `${offsetY}%`,
+                      opacity: timelineSecs < opacitySeconds ? 1 : 0,
+                      transition: 'opacity 0.25s ease-out'
+                    }}
+                  >
+                    <div className="bg-zinc-950/75 border border-white/10 rounded-full px-3 py-1.5 flex items-center gap-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.4)] saturate-[180%] backdrop-blur-md">
+                      <div className="w-3.5 h-3.5 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_6px_rgba(0,184,148,0.4)]">
+                        <span className="text-[8px] font-extrabold text-white mt-[-1.5px]">✓</span>
+                      </div>
+                      <span className="text-[9px] font-semibold text-white font-sans tracking-wide uppercase whitespace-nowrap">
+                        PROVENANT • {creatorName.toUpperCase()} (100% ORIGINAL)
+                      </span>
+                    </div>
+                  </div>
+                )}
 
-        function downloadFlattenedImage() {
-            showToast("Executing direct binary pixel flattening... 🚀");
-            writeMobileTelemetryLog(`Render executing: Verified Reels binary output.`);
-            
-            const hiddenCanvas = document.createElement("canvas");
-            const ctx = hiddenCanvas.getContext("2d");
-            const baseImg = new Image();
-            baseImg.crossOrigin = "anonymous"; baseImg.src = samples[mockMediaType];
-            
-            baseImg.onload = function() {
-                hiddenCanvas.width = baseImg.naturalWidth; hiddenCanvas.height = baseImg.naturalHeight;
-                
-                // 1. Draw original sensory pixels
-                ctx.drawImage(baseImg, 0, 0, hiddenCanvas.width, hiddenCanvas.height);
-                
-                // 2. Proportional Scaling based on high-res output bounds
-                const relativeScaleHeight = Math.floor(hiddenCanvas.height * 0.052);
-                const textValue = `PROVENANT • ${creatorAttributionName} (100% ORIGINAL)`;
-                ctx.save();
-                ctx.font = `600 ${Math.floor(relativeScaleHeight * 0.38)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-                const calculatedTextWidth = ctx.measureText(textValue).width;
-                const radiusVal = relativeScaleHeight / 2;
-                const relativeScaleWidth = calculatedTextWidth + (radiusVal * 3.4);
-                ctx.restore();
+                {/* Simulated Running Timeline Track Overlay */}
+                {activeTab === 'timeline' && (
+                  <div className="absolute bottom-3 right-3 bg-black/60 border border-white/10 px-2 py-1 rounded text-[8px] font-mono text-slate-300">
+                    SIM SECS: {timelineSecs}s / {opacitySeconds}s
+                  </div>
+                )}
 
-                // Compute slider offsets into absolute high-res pixels
-                const finalPillX = (hiddenCanvas.width - relativeScaleWidth) * (currentOffsetX / 100);
-                const finalPillY = (hiddenCanvas.height - relativeScaleHeight) * (currentOffsetY / 100);
+              </div>
+            </div>
 
-                // 3. Draw Translucent Slate Backdrop capsule rounded rectangle spec match
-                ctx.save();
-                ctx.fillStyle = "rgba(22, 24, 26, 0.76)"; ctx.beginPath();
-                ctx.roundRect(finalPillX, finalPillY, relativeScaleWidth, relativeScaleHeight, 30); ctx.fill(); ctx.restore();
-                
-                // 4. Draw green verification checkmark badge circle bubble
-                const circleRadiusVal = relativeScaleHeight * 0.28, cX = finalPillX + (relativeScaleHeight * 0.42) + 2, cY = finalPillY + (relativeScaleHeight * 0.5);
-                ctx.save(); ctx.fillStyle = "#00b894"; ctx.beginPath(); ctx.arc(cX, cY, circleRadiusVal, 0, 2 * Math.PI); ctx.fill(); ctx.restore();
-                
-                // Draw checkmark lines inside bubble
-                ctx.save(); ctx.strokeStyle = "#ffffff"; ctx.lineWidth = Math.max(1.5, relativeScaleHeight * 0.05); ctx.lineCap = "round"; ctx.beginPath();
-                const cs = circleRadiusVal * 0.45; ctx.moveTo(cX - cs, cY); ctx.lineTo(cX - cs * 0.1, cY + cs * 0.9); ctx.lineTo(cX + cs * 1.1, cY - cs * 0.7); ctx.stroke(); ctx.restore();
-                
-                // 5. Print dynamic creator typography content using clean system fonts matching Meta baseline
-                ctx.save(); ctx.fillStyle = "#ffffff"; ctx.font = `600 ${Math.floor(relativeScaleHeight * 0.38)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`; ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(textValue, cX + circleRadiusVal + (relativeScaleHeight * 0.22), finalPillY + (relativeScaleHeight * 0.52)); ctx.restore();
-                
-                // 6. Dispatch direct binary secure asset download link
-                const d = document.createElement("a"); d.download = "provenant_secured_instagram_asset.png"; d.href = hiddenCanvas.toDataURL("image/png");
-                document.body.appendChild(d); d.click(); document.body.removeChild(d);
-                showToast("Success! Hard-baked secured binary ready.");
-            };
-        }
+            {/* MOBILE INTERFACE ACTIVE TOOLBAR FOOTER */}
+            <div className="w-full flex justify-between items-center px-4 py-2 border-t border-white/5 bg-slate-950/90 rounded-b-[40px] z-10">
+              <button 
+                onClick={() => setActiveTab('capture')}
+                className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'capture' ? 'text-rose-500' : 'text-slate-400 hover:text-slate-200'}`}
+              >
+                <div className="p-1 rounded-xl bg-white/5">
+                  <CameraIcon />
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-wider">Secure</span>
+              </button>
 
-        // Provenant Academy Overlay System logic
-        function playAcademyVideo(videoId) {
-            document.getElementById('academy-iframe').src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
-            document.getElementById('video-academy-overlay').classList.remove('hidden');
-        }
-        function closeAcademyVideo() {
-            document.getElementById('video-academy-overlay').classList.add('hidden');
-            document.getElementById('academy-iframe').src = ""; // Force video to stop loading on close
-        }
+              <button 
+                onClick={() => {
+                  if (!signatureComplete) {
+                    triggerToast("Audit raw camera/video frame parameters first!");
+                    return;
+                  }
+                  setActiveTab('timeline');
+                }}
+                className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'timeline' ? 'text-rose-500' : 'text-slate-400 hover:text-slate-200'}`}
+              >
+                <div className="p-1 rounded-xl bg-white/5">
+                  <AdjustmentsIcon />
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-wider">Safe-Zone</span>
+              </button>
 
-        // Initialize state handshakes on first boot
-        window.onload = function() {
-            updateTagPreview();
-            updateFadeDuration();
-        }
-    </script>
-</body>
-</html>
+              <button 
+                onClick={() => {
+                  if (!signatureComplete) {
+                    triggerToast("Audit raw camera/video frame parameters first!");
+                    return;
+                  }
+                  setActiveTab('export');
+                }}
+                className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'export' ? 'text-rose-500' : 'text-slate-400 hover:text-slate-200'}`}
+              >
+                <div className="p-1 rounded-xl bg-white/5">
+                  <ShareIcon />
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-wider">Export</span>
+              </button>
+            </div>
+
+            {/* Simulated iOS Bottom Home Indicator */}
+            <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/20 rounded-full"></div>
+
+          </div>
+        </div>
+
+      </div>
+
+      {/* TOAST SYSTEM PORTAL */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 bg-slate-900 border border-white/10 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-[slideIn_0.25s_cubic-bezier(0.16,1,0.3,1)] z-[9999]">
+          <div className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></div>
+          <span className="text-xs font-semibold">{toastMessage}</span>
+        </div>
+      )}
+    </div>
+  );
+}
